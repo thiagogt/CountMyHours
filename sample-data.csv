@@ -1,0 +1,16 @@
+Data;Cliente;Projeto;Item;Hs
+01/06/2026;Opus;Medscript;MED-238, PR;8
+02/06/2026;Opus;Medscript;MED-238, MED-251, PRs;8
+03/06/2026;Opus;Medscript;MED-260, code review;8
+04/06/2026;Opus;OOF;OOF-412, API fix;8
+05/06/2026;Opus;OOF;OOF-415, testing;4
+05/06/2026;Opus;admin;daily, planning;4
+08/06/2026;Opus;Medscript;MED-265, implementation;8
+09/06/2026;Opus;Medscript;MED-265, review;8
+10/06/2026;Opus;OOF;OOF-420, deployment;8
+11/06/2026;Opus;Medscript;MED-270, bugfix;8
+12/06/2026;Opus;Medscript;MED-270, testing;8
+15/06/2026;Opus;OOF;OOF-425, mock server;8
+16/06/2026;Opus;OOF;OOF-425, mock server;8
+17/06/2026;Opus;Medscript;MED-280, feature;8
+18/06/2026;Opus;Medscript;MED-280, feature;8

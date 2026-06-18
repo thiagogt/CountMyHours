@@ -1,22 +1,40 @@
 package com.countmyh;
 
+import com.countmyh.model.WorkPeriodTracker;
+import com.countmyh.service.BusinessDayService;
+import com.countmyh.service.CalculationService;
+import com.countmyh.service.CsvImportService;
+import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.view.MainView;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        var label = new Label("CountMyHours");
-        label.setStyle("-fx-text-fill: #e4e4e7; -fx-font-size: 24px; -fx-font-weight: bold;");
+        var persistenceService = new JsonPersistenceService();
+        var businessDayService = new BusinessDayService();
+        var calcService = new CalculationService(businessDayService);
+        var csvImportService = new CsvImportService();
 
-        var root = new StackPane(label);
-        root.setStyle("-fx-background-color: #0f1117;");
+        WorkPeriodTracker data;
+        try {
+            data = persistenceService.load();
+        } catch (IOException e) {
+            data = new WorkPeriodTracker();
+        }
 
-        var scene = new Scene(root, 1200, 800);
+        var mainView = new MainView(data, calcService, persistenceService, csvImportService);
+
+        var scene = new Scene(mainView.getRoot(), 1280, 860);
+        scene.getStylesheets().add(
+                getClass().getResource("dark-theme.css").toExternalForm()
+        );
+
         primaryStage.setTitle("CountMyHours");
         primaryStage.setScene(scene);
         primaryStage.show();
