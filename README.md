@@ -26,9 +26,10 @@ The application imports time entries from semicolon-delimited CSV files:
 
 ```
 Data;Cliente;Projeto;Item;Hs
-01/06/2026;Opus;Medscript;MED-238, PR;8
-02/06/2026;Opus;Medscript;MED-238, MED-251, PRs;8
-03/06/2026;Opus;OOF;OOF-412, code review;4
+01/06/2026;Monsters SA;Wasowski;SCARE-42, door calibration;8
+02/06/2026;Monsters SA;Wasowski;SCARE-42, SCARE-51, PRs;8
+03/06/2026;Monsters SA;Boo Tracker;BOO-7, laugh energy research;4
+04/06/2026;Pixar Inc;Ratatouille;RAT-12, recipe API;8
 ```
 
 | Column   | Description              | Format       |

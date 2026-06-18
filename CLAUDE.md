@@ -24,7 +24,7 @@ All monthly/yearly aggregations are computed by `CalculationService`, not stored
 Semicolon-delimited. Date as `dd/MM/yyyy`:
 ```
 Data;Cliente;Projeto;Item;Hs
-01/06/2026;Opus;Medscript;MED-238, PR;8
+01/06/2026;Monsters SA;Wasowski;SCARE-42, door calibration;8
 ```
 
 ## Key Services
