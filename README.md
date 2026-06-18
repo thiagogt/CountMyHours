@@ -46,10 +46,13 @@ XLSX files with the same column structure are also supported.
 
 - Import work hours from CSV/XLSX files
 - Import legacy spreadsheet data (pre-aggregated monthly format, 2017-2025)
+- **Spreadsheet mode**: create a template CSV and open in Numbers/Excel, then reimport
+- **Import history**: list of all imported files with Export and Delete per file
 - Auto-calculate expected monthly hours based on Brazilian business days
 - Dashboard with stats cards and stacked bar chart (filterable by year range)
-- Project timeline (Gantt chart) and yearly totals
+- Project timeline and yearly totals
 - Extra hours tracking: gross extras, hours sold, net balance
 - Per-project extra hours breakdown with proportional sold-hours attribution
 - Hour selling records management
 - Dark theme UI
+- macOS `.dmg` installer (`./package-macos.sh`)

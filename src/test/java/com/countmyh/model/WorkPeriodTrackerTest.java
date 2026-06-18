@@ -3,6 +3,7 @@ package com.countmyh.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +17,8 @@ class WorkPeriodTrackerTest {
         assertTrue(tracker.getEntries().isEmpty());
         assertNotNull(tracker.getHourSellings());
         assertTrue(tracker.getHourSellings().isEmpty());
+        assertNotNull(tracker.getImportHistory());
+        assertTrue(tracker.getImportHistory().isEmpty());
     }
 
     @Test
@@ -75,5 +78,67 @@ class WorkPeriodTrackerTest {
         tracker.setHourSellings(null);
         assertNotNull(tracker.getHourSellings());
         assertTrue(tracker.getHourSellings().isEmpty());
+    }
+
+    @Test
+    void setImportHistoryNullShouldDefaultToEmptyList() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setImportHistory(null);
+        assertNotNull(tracker.getImportHistory());
+        assertTrue(tracker.getImportHistory().isEmpty());
+    }
+
+    @Test
+    void shouldAddImportRecord() {
+        var tracker = new WorkPeriodTracker();
+        var record = new ImportRecord("f.csv", "/p/f.csv", LocalDateTime.now(), 10);
+        tracker.addImportRecord(record);
+        assertEquals(1, tracker.getImportHistory().size());
+        assertEquals(record, tracker.getImportHistory().getFirst());
+    }
+
+    @Test
+    void shouldRemoveEntriesBySource() {
+        var tracker = new WorkPeriodTracker();
+        var item1 = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0);
+        item1.setSourceFile("/path/a.csv");
+        var item2 = new WorkHourItem(LocalDate.of(2026, 6, 2), "A", "P1", "t", 8.0);
+        item2.setSourceFile("/path/b.csv");
+        var item3 = new WorkHourItem(LocalDate.of(2026, 6, 3), "A", "P1", "t", 8.0);
+        item3.setSourceFile("/path/a.csv");
+
+        tracker.addEntry(item1);
+        tracker.addEntry(item2);
+        tracker.addEntry(item3);
+
+        int removed = tracker.removeEntriesBySource("/path/a.csv");
+
+        assertEquals(2, removed);
+        assertEquals(1, tracker.getEntries().size());
+        assertEquals("/path/b.csv", tracker.getEntries().getFirst().getSourceFile());
+    }
+
+    @Test
+    void removeEntriesBySourceShouldReturnZeroWhenNoMatch() {
+        var tracker = new WorkPeriodTracker();
+        var item = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0);
+        item.setSourceFile("/path/a.csv");
+        tracker.addEntry(item);
+
+        int removed = tracker.removeEntriesBySource("/path/nonexistent.csv");
+
+        assertEquals(0, removed);
+        assertEquals(1, tracker.getEntries().size());
+    }
+
+    @Test
+    void shouldRemoveImportRecord() {
+        var tracker = new WorkPeriodTracker();
+        var record = new ImportRecord("f.csv", "/p/f.csv", LocalDateTime.now(), 10);
+        tracker.addImportRecord(record);
+
+        tracker.removeImportRecord(record);
+
+        assertTrue(tracker.getImportHistory().isEmpty());
     }
 }
