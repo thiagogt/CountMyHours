@@ -19,7 +19,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -34,10 +38,14 @@ public class DataEntryView {
     private final Runnable onDataChanged;
     private final VBox content;
 
+    private static final String CSV_HEADER = "Data;Cliente;Projeto;Item;Hs";
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private Label statusLabel;
     private TableView<WorkHourItem> table;
     private ComboBox<String> filterYear;
     private ComboBox<String> filterProject;
+    private File lastOpenedSpreadsheet;
 
     public DataEntryView(WorkPeriodTracker data, CsvImportService csvImportService,
                          JsonPersistenceService persistenceService, Runnable onDataChanged) {
@@ -67,6 +75,24 @@ public class DataEntryView {
         var btnImport = new Button("Import CSV / XLSX");
         btnImport.setOnAction(e -> handleImport());
 
+        var btnNewSheet = new Button("New Spreadsheet");
+        btnNewSheet.setStyle("-fx-background-color: #10b981;");
+        btnNewSheet.setOnAction(e -> handleNewSpreadsheet());
+
+        var btnExportEdit = new Button("Export & Edit");
+        btnExportEdit.setStyle("-fx-background-color: #f59e0b;");
+        btnExportEdit.setOnAction(e -> handleExportAndEdit());
+
+        var btnReimport = new Button("Reimport Last");
+        btnReimport.setStyle("-fx-background-color: #8b5cf6;");
+        btnReimport.setOnAction(e -> handleReimportLast());
+
+        var desc = new Label("New Spreadsheet: creates a template CSV and opens it in your spreadsheet app.  " +
+                "Export & Edit: exports current entries to CSV for editing.  " +
+                "After editing, use Import or Reimport Last.");
+        desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-wrap-text: true;");
+        desc.setWrapText(true);
+
         var info = new VBox(4);
         if (data.getLastImportDate() != null) {
             info.getChildren().add(new Label("Last import: " +
@@ -82,7 +108,10 @@ public class DataEntryView {
         totalLabel.setStyle("-fx-text-fill: #8b8d97;");
         info.getChildren().add(totalLabel);
 
-        container.getChildren().addAll(sectionTitle, new HBox(16, btnImport), info);
+        var buttons = new HBox(12, btnNewSheet, btnExportEdit, btnImport, btnReimport);
+        buttons.setAlignment(Pos.CENTER_LEFT);
+
+        container.getChildren().addAll(sectionTitle, buttons, desc, info);
         return container;
     }
 
@@ -219,6 +248,125 @@ public class DataEntryView {
                 .distinct().sorted()
                 .forEach(p -> filterProject.getItems().add(p));
         filterProject.setValue(filterProject.getItems().contains(currentProject) ? currentProject : "All projects");
+    }
+
+    private void handleNewSpreadsheet() {
+        var fileChooser = new FileChooser();
+        fileChooser.setTitle("Create new spreadsheet");
+        fileChooser.setInitialFileName("hours_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM")) + ".csv");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV files", "*.csv")
+        );
+
+        File file = fileChooser.showSaveDialog(content.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            writeCsvTemplate(file);
+            lastOpenedSpreadsheet = file;
+            openInSpreadsheetApp(file);
+
+            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+            statusLabel.setText("Spreadsheet created: " + file.getName() + " — edit, save, then use Import or Reimport Last");
+        } catch (IOException ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Failed to create spreadsheet: " + ex.getMessage());
+        }
+    }
+
+    private void handleExportAndEdit() {
+        if (data.getEntries().isEmpty()) {
+            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+            statusLabel.setText("No entries to export");
+            return;
+        }
+
+        var fileChooser = new FileChooser();
+        fileChooser.setTitle("Export entries to CSV");
+        fileChooser.setInitialFileName("hours_export_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd")) + ".csv");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV files", "*.csv")
+        );
+
+        File file = fileChooser.showSaveDialog(content.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            writeEntriesToCsv(file);
+            lastOpenedSpreadsheet = file;
+            openInSpreadsheetApp(file);
+
+            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+            statusLabel.setText("Exported " + data.getEntries().size() + " entries to " + file.getName() + " — edit, save, then Reimport");
+        } catch (IOException ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Export failed: " + ex.getMessage());
+        }
+    }
+
+    private void handleReimportLast() {
+        if (lastOpenedSpreadsheet == null || !lastOpenedSpreadsheet.exists()) {
+            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+            statusLabel.setText("No spreadsheet to reimport. Use New Spreadsheet or Export & Edit first.");
+            return;
+        }
+
+        try {
+            var items = csvImportService.importFile(lastOpenedSpreadsheet);
+            int added = data.addEntriesWithDedup(items);
+            data.setLastImportDate(LocalDateTime.now());
+            data.setLastSourceFile(lastOpenedSpreadsheet.getAbsolutePath());
+            persistenceService.save(data);
+
+            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+            statusLabel.setText("Reimported " + lastOpenedSpreadsheet.getName() + ": " + added + " new entries added");
+
+            refreshFilters();
+            applyFilters();
+            onDataChanged.run();
+        } catch (Exception ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Reimport failed: " + ex.getMessage());
+        }
+    }
+
+    private void writeCsvTemplate(File file) throws IOException {
+        try (var writer = new FileWriter(file)) {
+            writer.write(CSV_HEADER + "\n");
+            String today = LocalDate.now().format(DATE_FMT);
+            writer.write(today + ";Client;Project;Task description;8\n");
+        }
+    }
+
+    private void writeEntriesToCsv(File file) throws IOException {
+        var sorted = data.getEntries().stream()
+                .sorted(Comparator.comparing(WorkHourItem::getDate))
+                .toList();
+
+        try (var writer = new FileWriter(file)) {
+            writer.write(CSV_HEADER + "\n");
+            for (var entry : sorted) {
+                writer.write(entry.getDate().format(DATE_FMT)
+                        + ";" + entry.getClient()
+                        + ";" + entry.getProject()
+                        + ";" + entry.getItem()
+                        + ";" + (entry.getHours() % 1 == 0 ? String.valueOf((int) entry.getHours()) : String.valueOf(entry.getHours()))
+                        + "\n");
+            }
+        }
+    }
+
+    private void openInSpreadsheetApp(File file) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(file);
+            } else {
+                new ProcessBuilder("open", file.getAbsolutePath()).start();
+            }
+        } catch (IOException e) {
+            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+            statusLabel.setText("File created but could not open automatically: " + file.getAbsolutePath());
+        }
     }
 
     public Node getRoot() {
