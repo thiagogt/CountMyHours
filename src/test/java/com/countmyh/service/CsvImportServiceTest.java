@@ -1,0 +1,164 @@
+package com.countmyh.service;
+
+import com.countmyh.model.WorkHourItem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class CsvImportServiceTest {
+
+    private CsvImportService service;
+
+    @TempDir
+    Path tempDir;
+
+    @BeforeEach
+    void setUp() {
+        service = new CsvImportService();
+    }
+
+    @Test
+    void shouldImportValidCsv() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;MED-238, PR;8
+                02/06/2026;Opus;Medscript;MED-251, PRs;8
+                03/06/2026;Opus;OOF;OOF-412, review;4
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+
+        assertEquals(3, items.size());
+        assertEquals("Medscript", items.get(0).getProject());
+        assertEquals(LocalDate.of(2026, 6, 1), items.get(0).getDate());
+        assertEquals(8.0, items.get(0).getHours());
+        assertEquals("Opus", items.get(0).getClient());
+        assertEquals("MED-238, PR", items.get(0).getItem());
+    }
+
+    @Test
+    void shouldSkipHeaderLine() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;task;8
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+    }
+
+    @Test
+    void shouldHandleCsvWithoutHeader() throws IOException {
+        File csv = createCsvFile("01/06/2026;Opus;Medscript;task;8\n");
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+    }
+
+    @Test
+    void shouldSkipMalformedLines() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;task;8
+                bad line here
+                02/06/2026;Opus;Medscript;task2;4
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(2, items.size());
+    }
+
+    @Test
+    void shouldSkipLinesWithInvalidDate() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                99/99/9999;Opus;Medscript;task;8
+                01/06/2026;Opus;Medscript;task;8
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+    }
+
+    @Test
+    void shouldSkipLinesWithZeroHours() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;task;0
+                02/06/2026;Opus;Medscript;task;8
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+    }
+
+    @Test
+    void shouldSkipLinesWithEmptyClient() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;;Medscript;task;8
+                02/06/2026;Opus;Medscript;task;8
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+    }
+
+    @Test
+    void shouldHandleCommaDecimalSeparator() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;task;4,5
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(1, items.size());
+        assertEquals(4.5, items.getFirst().getHours());
+    }
+
+    @Test
+    void shouldHandleEmptyFile() throws IOException {
+        File csv = createCsvFile("");
+        List<WorkHourItem> items = service.importFile(csv);
+        assertTrue(items.isEmpty());
+    }
+
+    @Test
+    void shouldRejectUnsupportedFileFormat() {
+        File txt = tempDir.resolve("data.txt").toFile();
+        assertThrows(IOException.class, () -> service.importFile(txt));
+    }
+
+    @Test
+    void shouldSkipEmptyLines() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs
+                01/06/2026;Opus;Medscript;task;8
+
+                02/06/2026;Opus;Medscript;task2;8
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(2, items.size());
+    }
+
+    @Test
+    void parseCsvLineShouldReturnNullForTooFewColumns() {
+        assertNull(service.parseCsvLine("a;b;c", 1));
+    }
+
+    private File createCsvFile(String content) throws IOException {
+        Path csvPath = tempDir.resolve("test.csv");
+        Files.writeString(csvPath, content);
+        return csvPath.toFile();
+    }
+}
