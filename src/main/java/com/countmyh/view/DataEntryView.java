@@ -1,18 +1,23 @@
 package com.countmyh.view;
 
+import com.countmyh.model.ImportRecord;
 import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
@@ -43,6 +48,7 @@ public class DataEntryView {
 
     private Label statusLabel;
     private TableView<WorkHourItem> table;
+    private TableView<ImportRecord> importHistoryTable;
     private ComboBox<String> filterYear;
     private ComboBox<String> filterProject;
     private File lastOpenedSpreadsheet;
@@ -62,7 +68,7 @@ public class DataEntryView {
         var title = new Label("Data");
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        content.getChildren().addAll(title, buildImportSection(), buildFilters(), buildTable(), buildStatusSection());
+        content.getChildren().addAll(title, buildImportSection(), buildImportHistorySection(), buildFilters(), buildTable(), buildStatusSection());
     }
 
     private Node buildImportSection() {
@@ -113,6 +119,153 @@ public class DataEntryView {
 
         container.getChildren().addAll(sectionTitle, buttons, desc, info);
         return container;
+    }
+
+    private Node buildImportHistorySection() {
+        var container = new VBox(12);
+        container.getStyleClass().add("chart-container");
+
+        var sectionTitle = new Label("Imported Files");
+        sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
+
+        importHistoryTable = new TableView<>();
+        importHistoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        importHistoryTable.setPlaceholder(new Label("No files imported yet"));
+
+        var colFile = new TableColumn<ImportRecord, String>("File");
+        colFile.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getFileName()));
+
+        var colDate = new TableColumn<ImportRecord, String>("Imported At");
+        colDate.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().getImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+        ));
+        colDate.setPrefWidth(140);
+
+        var colEntries = new TableColumn<ImportRecord, Number>("Entries");
+        colEntries.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getEntriesImported()));
+        colEntries.setPrefWidth(70);
+
+        var colActions = new TableColumn<ImportRecord, Void>("Actions");
+        colActions.setPrefWidth(180);
+        colActions.setCellFactory(col -> new TableCell<>() {
+            private final Button btnExport = new Button("Export");
+            private final Button btnDelete = new Button("Delete");
+            private final HBox box = new HBox(8, btnExport, btnDelete);
+
+            {
+                btnExport.setStyle("-fx-background-color: #f59e0b; -fx-font-size: 11px; -fx-padding: 4 10;");
+                btnDelete.setStyle("-fx-background-color: #ef4444; -fx-font-size: 11px; -fx-padding: 4 10;");
+                box.setAlignment(Pos.CENTER);
+
+                btnExport.setOnAction(e -> {
+                    ImportRecord record = getTableView().getItems().get(getIndex());
+                    handleExportImportRecord(record);
+                });
+
+                btnDelete.setOnAction(e -> {
+                    ImportRecord record = getTableView().getItems().get(getIndex());
+                    handleDeleteImportRecord(record);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : box);
+            }
+        });
+
+        importHistoryTable.getColumns().addAll(colFile, colDate, colEntries, colActions);
+        refreshImportHistory();
+
+        int rows = Math.max(2, Math.min(6, data.getImportHistory().size()));
+        importHistoryTable.setPrefHeight(40 + rows * 36);
+
+        container.getChildren().addAll(sectionTitle, importHistoryTable);
+        return container;
+    }
+
+    private void refreshImportHistory() {
+        importHistoryTable.getItems().setAll(data.getImportHistory());
+        int rows = Math.max(2, Math.min(6, data.getImportHistory().size()));
+        importHistoryTable.setPrefHeight(40 + rows * 36);
+    }
+
+    private void handleExportImportRecord(ImportRecord record) {
+        var entries = data.getEntries().stream()
+                .filter(e -> record.getFilePath().equals(e.getSourceFile()))
+                .sorted(Comparator.comparing(WorkHourItem::getDate))
+                .toList();
+
+        if (entries.isEmpty()) {
+            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+            statusLabel.setText("No entries found for " + record.getFileName());
+            return;
+        }
+
+        var fileChooser = new FileChooser();
+        fileChooser.setTitle("Export entries from " + record.getFileName());
+        fileChooser.setInitialFileName(record.getFileName());
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files", "*.csv"));
+
+        File file = fileChooser.showSaveDialog(content.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            writeItemsToCsv(file, entries);
+            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+            statusLabel.setText("Exported " + entries.size() + " entries to " + file.getName());
+        } catch (IOException ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Export failed: " + ex.getMessage());
+        }
+    }
+
+    private void handleDeleteImportRecord(ImportRecord record) {
+        long count = data.getEntries().stream()
+                .filter(e -> record.getFilePath().equals(e.getSourceFile()))
+                .count();
+
+        var alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Import");
+        alert.setHeaderText("Delete \"" + record.getFileName() + "\"?");
+        alert.setContentText("This will permanently remove " + count + " entries that were imported from this file.");
+
+        var result = alert.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) return;
+
+        int removed = data.removeEntriesBySource(record.getFilePath());
+        data.removeImportRecord(record);
+
+        try {
+            persistenceService.save(data);
+        } catch (IOException ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Save failed: " + ex.getMessage());
+            return;
+        }
+
+        statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+        statusLabel.setText("Deleted " + removed + " entries from " + record.getFileName());
+
+        refreshImportHistory();
+        refreshFilters();
+        applyFilters();
+        onDataChanged.run();
+    }
+
+    private void writeItemsToCsv(File file, List<WorkHourItem> items) throws IOException {
+        try (var writer = new FileWriter(file)) {
+            writer.write(CSV_HEADER + "\n");
+            for (var entry : items) {
+                writer.write(entry.getDate().format(DATE_FMT)
+                        + ";" + entry.getClient()
+                        + ";" + entry.getProject()
+                        + ";" + entry.getItem()
+                        + ";" + (entry.getHours() % 1 == 0 ? String.valueOf((int) entry.getHours()) : String.valueOf(entry.getHours()))
+                        + "\n");
+            }
+        }
     }
 
     private Node buildFilters() {
@@ -209,24 +362,7 @@ public class DataEntryView {
         File file = fileChooser.showOpenDialog(content.getScene().getWindow());
         if (file == null) return;
 
-        try {
-            var items = csvImportService.importFile(file);
-            int added = data.addEntriesWithDedup(items);
-            data.setLastImportDate(LocalDateTime.now());
-            data.setLastSourceFile(file.getAbsolutePath());
-            persistenceService.save(data);
-
-            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Imported " + added + " new entries (" + items.size() + " total in file)");
-
-            // Refresh filters and table
-            refreshFilters();
-            applyFilters();
-            onDataChanged.run();
-        } catch (Exception ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Import failed: " + ex.getMessage());
-        }
+        importFromFile(file);
     }
 
     private void refreshFilters() {
@@ -292,7 +428,10 @@ public class DataEntryView {
         if (file == null) return;
 
         try {
-            writeEntriesToCsv(file);
+            var sorted = data.getEntries().stream()
+                    .sorted(Comparator.comparing(WorkHourItem::getDate))
+                    .toList();
+            writeItemsToCsv(file, sorted);
             lastOpenedSpreadsheet = file;
             openInSpreadsheetApp(file);
 
@@ -311,22 +450,37 @@ public class DataEntryView {
             return;
         }
 
+        importFromFile(lastOpenedSpreadsheet);
+    }
+
+    private void importFromFile(File file) {
         try {
-            var items = csvImportService.importFile(lastOpenedSpreadsheet);
+            var items = csvImportService.importFile(file);
+            String sourcePath = file.getAbsolutePath();
+            items.forEach(item -> item.setSourceFile(sourcePath));
+
             int added = data.addEntriesWithDedup(items);
             data.setLastImportDate(LocalDateTime.now());
-            data.setLastSourceFile(lastOpenedSpreadsheet.getAbsolutePath());
+            data.setLastSourceFile(sourcePath);
+
+            if (added > 0) {
+                data.addImportRecord(new ImportRecord(
+                        file.getName(), sourcePath, LocalDateTime.now(), added
+                ));
+            }
+
             persistenceService.save(data);
 
             statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Reimported " + lastOpenedSpreadsheet.getName() + ": " + added + " new entries added");
+            statusLabel.setText("Imported " + added + " new entries from " + file.getName() + " (" + items.size() + " in file)");
 
+            refreshImportHistory();
             refreshFilters();
             applyFilters();
             onDataChanged.run();
         } catch (Exception ex) {
             statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Reimport failed: " + ex.getMessage());
+            statusLabel.setText("Import failed: " + ex.getMessage());
         }
     }
 
@@ -335,24 +489,6 @@ public class DataEntryView {
             writer.write(CSV_HEADER + "\n");
             String today = LocalDate.now().format(DATE_FMT);
             writer.write(today + ";Client;Project;Task description;8\n");
-        }
-    }
-
-    private void writeEntriesToCsv(File file) throws IOException {
-        var sorted = data.getEntries().stream()
-                .sorted(Comparator.comparing(WorkHourItem::getDate))
-                .toList();
-
-        try (var writer = new FileWriter(file)) {
-            writer.write(CSV_HEADER + "\n");
-            for (var entry : sorted) {
-                writer.write(entry.getDate().format(DATE_FMT)
-                        + ";" + entry.getClient()
-                        + ";" + entry.getProject()
-                        + ";" + entry.getItem()
-                        + ";" + (entry.getHours() % 1 == 0 ? String.valueOf((int) entry.getHours()) : String.valueOf(entry.getHours()))
-                        + "\n");
-            }
         }
     }
 

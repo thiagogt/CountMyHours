@@ -12,6 +12,7 @@ public class WorkHourItem {
     private String project;
     private String item;
     private double hours;
+    private String sourceFile;
 
     public WorkHourItem() {
     }
@@ -62,6 +63,14 @@ public class WorkHourItem {
 
     public void setHours(double hours) {
         this.hours = hours;
+    }
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     @JsonIgnore

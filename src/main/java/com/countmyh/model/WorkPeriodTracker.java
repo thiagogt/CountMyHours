@@ -8,12 +8,14 @@ public class WorkPeriodTracker {
 
     private List<WorkHourItem> entries;
     private List<WorkHourSelling> hourSellings;
+    private List<ImportRecord> importHistory;
     private LocalDateTime lastImportDate;
     private String lastSourceFile;
 
     public WorkPeriodTracker() {
         this.entries = new ArrayList<>();
         this.hourSellings = new ArrayList<>();
+        this.importHistory = new ArrayList<>();
     }
 
     public List<WorkHourItem> getEntries() {
@@ -48,12 +50,24 @@ public class WorkPeriodTracker {
         this.lastSourceFile = lastSourceFile;
     }
 
+    public List<ImportRecord> getImportHistory() {
+        return importHistory;
+    }
+
+    public void setImportHistory(List<ImportRecord> importHistory) {
+        this.importHistory = importHistory != null ? importHistory : new ArrayList<>();
+    }
+
     public void addEntry(WorkHourItem entry) {
         entries.add(entry);
     }
 
     public void addHourSelling(WorkHourSelling selling) {
         hourSellings.add(selling);
+    }
+
+    public void addImportRecord(ImportRecord record) {
+        importHistory.add(record);
     }
 
     public int addEntriesWithDedup(List<WorkHourItem> newEntries) {
@@ -65,5 +79,15 @@ public class WorkPeriodTracker {
             }
         }
         return added;
+    }
+
+    public int removeEntriesBySource(String sourceFilePath) {
+        int before = entries.size();
+        entries.removeIf(e -> sourceFilePath.equals(e.getSourceFile()));
+        return before - entries.size();
+    }
+
+    public void removeImportRecord(ImportRecord record) {
+        importHistory.remove(record);
     }
 }
