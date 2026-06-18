@@ -11,7 +11,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -43,8 +46,18 @@ public class MainView {
     }
 
     private void buildSidebar() {
+        var logoImage = new Image(getClass().getResourceAsStream("/com/countmyh/logo.png"));
+        var logoView = new ImageView(logoImage);
+        logoView.setFitWidth(40);
+        logoView.setFitHeight(40);
+        logoView.setPreserveRatio(true);
+
         var title = new Label("CountMyHours");
-        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7; -fx-padding: 20 20 10 20;");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
+
+        var logoBox = new HBox(10, logoView, title);
+        logoBox.setAlignment(Pos.CENTER_LEFT);
+        logoBox.setPadding(new Insets(16, 16, 6, 16));
 
         var subtitle = new Label("Work Hours Tracker");
         subtitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #8b8d97; -fx-padding: 0 20 20 20;");
@@ -59,7 +72,7 @@ public class MainView {
         btnTimeline.setOnAction(e -> showView("timeline"));
         btnData.setOnAction(e -> showView("data"));
 
-        var sidebar = new VBox(0, title, subtitle, btnDashboard, btnTimeline, btnData);
+        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnData);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
         sidebar.setMinWidth(200);

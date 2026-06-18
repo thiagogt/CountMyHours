@@ -8,6 +8,7 @@ import com.countmyh.service.JsonPersistenceService;
 import com.countmyh.view.MainView;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class App extends Application {
         );
 
         primaryStage.setTitle("CountMyHours");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("logo.png")));
         primaryStage.setScene(scene);
         primaryStage.show();
     }
