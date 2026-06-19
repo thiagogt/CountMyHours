@@ -11,11 +11,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,8 +103,10 @@ class CalculationServiceTest {
 
     @Test
     void shouldCalculateMonthlyBalance() {
-        when(businessDayService.getExpectedHours(2026, 6)).thenReturn(168.0);
-        when(businessDayService.getExpectedHours(2026, 5)).thenReturn(160.0);
+        when(businessDayService.getBusinessDays(2026, 6)).thenReturn(21);
+        when(businessDayService.getHolidaysInMonth(2026, 6)).thenReturn(List.of());
+        when(businessDayService.getBusinessDays(2026, 5)).thenReturn(20);
+        when(businessDayService.getHolidaysInMonth(2026, 5)).thenReturn(List.of());
 
         var data = createSampleData();
         var result = service.getMonthlyBalance(data);
@@ -119,8 +123,26 @@ class CalculationServiceTest {
     }
 
     @Test
+    void shouldSubtractVacationDaysFromExpected() {
+        when(businessDayService.getBusinessDays(2026, 6)).thenReturn(21);
+        when(businessDayService.getHolidaysInMonth(2026, 6)).thenReturn(List.of());
+
+        var tracker = new WorkPeriodTracker();
+        tracker.addEntry(new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P", "t", 100));
+        tracker.setVacation(2026, 6, 5);
+
+        var result = service.getMonthlyBalance(tracker);
+        var june = result.get(YearMonth.of(2026, 6));
+
+        assertEquals(128.0, june.expected()); // 168 - (5*8)
+        assertEquals(5, june.vacationDays());
+        assertEquals(-28.0, june.extra()); // 100 - 128
+    }
+
+    @Test
     void shouldCalculateYearlyBalance() {
-        when(businessDayService.getExpectedHours(anyInt(), anyInt())).thenReturn(160.0);
+        lenient().when(businessDayService.getBusinessDays(anyInt(), anyInt())).thenReturn(20);
+        lenient().when(businessDayService.getHolidaysInMonth(anyInt(), anyInt())).thenReturn(List.of());
 
         var tracker = new WorkPeriodTracker();
         tracker.addEntry(new WorkHourItem(LocalDate.of(2026, 1, 1), "A", "P", "t", 180));
@@ -151,7 +173,8 @@ class CalculationServiceTest {
 
     @Test
     void shouldCalculateGrossExtra() {
-        when(businessDayService.getExpectedHours(2026, 1)).thenReturn(160.0);
+        when(businessDayService.getBusinessDays(2026, 1)).thenReturn(20);
+        when(businessDayService.getHolidaysInMonth(2026, 1)).thenReturn(List.of());
 
         var tracker = new WorkPeriodTracker();
         tracker.addEntry(new WorkHourItem(LocalDate.of(2026, 1, 1), "A", "P", "t", 180));
@@ -170,7 +193,8 @@ class CalculationServiceTest {
 
     @Test
     void shouldCalculateNetBalance() {
-        when(businessDayService.getExpectedHours(2026, 1)).thenReturn(160.0);
+        when(businessDayService.getBusinessDays(2026, 1)).thenReturn(20);
+        when(businessDayService.getHolidaysInMonth(2026, 1)).thenReturn(List.of());
 
         var tracker = new WorkPeriodTracker();
         tracker.addEntry(new WorkHourItem(LocalDate.of(2026, 1, 1), "A", "P", "t", 200));
@@ -216,7 +240,8 @@ class CalculationServiceTest {
 
     @Test
     void shouldDistributeSoldHoursProportionally() {
-        when(businessDayService.getExpectedHours(anyInt(), anyInt())).thenReturn(160.0);
+        lenient().when(businessDayService.getBusinessDays(anyInt(), anyInt())).thenReturn(20);
+        lenient().when(businessDayService.getHolidaysInMonth(anyInt(), anyInt())).thenReturn(List.of());
 
         var tracker = new WorkPeriodTracker();
         // Project A: 180h in Jan (extra=20), Project B: 170h in Jan (extra=10)
@@ -247,7 +272,8 @@ class CalculationServiceTest {
 
     @Test
     void shouldNotDistributeSoldToProjectsWithNegativeExtra() {
-        when(businessDayService.getExpectedHours(anyInt(), anyInt())).thenReturn(160.0);
+        lenient().when(businessDayService.getBusinessDays(anyInt(), anyInt())).thenReturn(20);
+        lenient().when(businessDayService.getHolidaysInMonth(anyInt(), anyInt())).thenReturn(List.of());
 
         var tracker = new WorkPeriodTracker();
         // Project A: 180h (extra positive), Project B: 10h (extra negative after proportion)

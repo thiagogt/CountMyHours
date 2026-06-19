@@ -9,6 +9,8 @@ public class WorkPeriodTracker {
     private List<WorkHourItem> entries;
     private List<WorkHourSelling> hourSellings;
     private List<ImportRecord> importHistory;
+    private List<VacationEntry> vacationDays;
+    private List<MonthNote> monthNotes;
     private LocalDateTime lastImportDate;
     private String lastSourceFile;
 
@@ -16,6 +18,8 @@ public class WorkPeriodTracker {
         this.entries = new ArrayList<>();
         this.hourSellings = new ArrayList<>();
         this.importHistory = new ArrayList<>();
+        this.vacationDays = new ArrayList<>();
+        this.monthNotes = new ArrayList<>();
     }
 
     public List<WorkHourItem> getEntries() {
@@ -58,6 +62,47 @@ public class WorkPeriodTracker {
         this.importHistory = importHistory != null ? importHistory : new ArrayList<>();
     }
 
+    public List<VacationEntry> getVacationDays() {
+        return vacationDays;
+    }
+
+    public void setVacationDays(List<VacationEntry> vacationDays) {
+        this.vacationDays = vacationDays != null ? vacationDays : new ArrayList<>();
+    }
+
+    public void setVacation(int year, int month, int days) {
+        vacationDays.removeIf(v -> v.year() == year && v.month() == month);
+        if (days > 0) {
+            vacationDays.add(new VacationEntry(year, month, days));
+        }
+    }
+
+    public int getVacation(int year, int month) {
+        return vacationDays.stream()
+                .filter(v -> v.year() == year && v.month() == month)
+                .mapToInt(VacationEntry::days)
+                .findFirst().orElse(0);
+    }
+
+    public List<MonthNote> getMonthNotes() {
+        return monthNotes;
+    }
+
+    public void setMonthNotes(List<MonthNote> monthNotes) {
+        this.monthNotes = monthNotes != null ? monthNotes : new ArrayList<>();
+    }
+
+    public void setMonthNote(int year, int month, int holidays, String observation) {
+        monthNotes.removeIf(n -> n.year() == year && n.month() == month);
+        monthNotes.add(new MonthNote(year, month, holidays, observation));
+    }
+
+    public MonthNote getMonthNote(int year, int month) {
+        return monthNotes.stream()
+                .filter(n -> n.year() == year && n.month() == month)
+                .findFirst().orElse(null);
+    }
+
     public void addEntry(WorkHourItem entry) {
         entries.add(entry);
     }
@@ -95,6 +140,8 @@ public class WorkPeriodTracker {
         entries.clear();
         hourSellings.clear();
         importHistory.clear();
+        vacationDays.clear();
+        monthNotes.clear();
         lastImportDate = null;
         lastSourceFile = null;
     }

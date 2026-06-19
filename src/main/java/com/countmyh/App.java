@@ -43,6 +43,7 @@ public class App extends Application {
 
     private WorkPeriodTracker loadedData;
     private CalculationService calcService;
+    private BusinessDayService businessDayService;
     private JsonPersistenceService persistenceService;
     private CsvImportService csvImportService;
 
@@ -72,7 +73,7 @@ public class App extends Application {
 
         new Thread(() -> {
             persistenceService = new JsonPersistenceService();
-            var businessDayService = new BusinessDayService();
+            businessDayService = new BusinessDayService();
             calcService = new CalculationService(businessDayService);
             csvImportService = new CsvImportService();
 
@@ -186,7 +187,7 @@ public class App extends Application {
     }
 
     private void showMainApp() {
-        var mainView = new MainView(loadedData, calcService, persistenceService, csvImportService);
+        var mainView = new MainView(loadedData, calcService, businessDayService, persistenceService, csvImportService);
         rootStack.getChildren().addFirst(mainView.getRoot());
 
         var mainNode = mainView.getRoot();

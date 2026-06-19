@@ -62,8 +62,15 @@ public class CalculationService {
         for (var entry : worked.entrySet()) {
             YearMonth ym = entry.getKey();
             double w = entry.getValue();
-            double expected = businessDayService.getExpectedHours(ym.getYear(), ym.getMonthValue());
-            result.put(ym, new MonthlyBalance(w, expected, w - expected));
+            int baseBusinessDays = businessDayService.getBusinessDays(ym.getYear(), ym.getMonthValue());
+            int autoHolidays = businessDayService.getHolidaysInMonth(ym.getYear(), ym.getMonthValue()).size();
+            var monthNote = data.getMonthNote(ym.getYear(), ym.getMonthValue());
+            int customHolidays = monthNote != null ? monthNote.holidays() : autoHolidays;
+            int extraHolidays = customHolidays - autoHolidays;
+            int vacationDays = data.getVacation(ym.getYear(), ym.getMonthValue());
+            int effectiveDays = baseBusinessDays - extraHolidays - vacationDays;
+            double expected = effectiveDays * 8.0;
+            result.put(ym, new MonthlyBalance(w, expected, w - expected, vacationDays));
         }
         return result;
     }
@@ -257,7 +264,7 @@ public class CalculationService {
 
     // -- Records --
 
-    public record MonthlyBalance(double worked, double expected, double extra) {}
+    public record MonthlyBalance(double worked, double expected, double extra, int vacationDays) {}
 
     public record YearlyBalance(double worked, double gross, double sold, double vacationSold, double net, String note) {}
 

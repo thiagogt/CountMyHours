@@ -16,7 +16,9 @@ No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `
 - `WorkHourItem` — Java record. One row from CSV: date (LocalDate), client, project, item, hours, sourceFile. Convenience constructor without sourceFile. `withSourceFile()` for immutable copy. equals/hashCode excludes sourceFile.
 - `WorkHourSelling` — Java record: year, hoursSold, vacationDaysSold, note. Derived `vacationHoursSold()`.
 - `ImportRecord` — Java record: fileName, filePath, importDate, entriesImported. equals/hashCode on filePath + importDate only.
-- `WorkPeriodTracker` — Mutable class (not a record): List of entries + sellings + importHistory + metadata
+- `VacationEntry` — Java record: year, month, days
+- `MonthNote` — Java record: year, month, holidays (custom count), observation (holiday names/notes)
+- `WorkPeriodTracker` — Mutable class (not a record): List of entries + sellings + importHistory + vacationDays + monthNotes + metadata
 
 All monthly/yearly aggregations are computed by `CalculationService`, not stored.
 Record accessors use component-name style (`item.date()`, `item.project()`) not getter style (`getDate()`).
@@ -31,7 +33,7 @@ Data;Cliente;Projeto;Item;Hs
 
 ## Key Services
 
-- `BusinessDayService` — Brazilian national holidays (fixed + Easter-based moveable) + São Paulo state holiday (Jul 9). Calculates working days per month, expected hours = business days × 8.
+- `BusinessDayService` — Brazilian national holidays (fixed + Easter-based moveable) + São Paulo state holiday (Jul 9). Calculates working days per month, expected hours = business days × 8. `getHolidaysInMonth()` returns named holidays on weekdays. `getNamedHolidays()` returns all holidays with names.
 - `CsvImportService` — Parses CSV (`;` delimiter only, validates format on import) and XLSX with the same column structure.
 - `LegacyXlsxImportService` — Parses the old monthly-aggregated spreadsheet (2017-2025). Converts to `WorkHourItem` entries dated to 1st of month with item="legacy-import", client="Opus".
 - `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename.
@@ -49,6 +51,7 @@ Data;Cliente;Projeto;Item;Hs
   - Delete removes all entries tagged with that file's sourceFile and persists the change
 - **Erase All Data**: clears all entries, hour sellings, and import history with confirmation dialog. Calls `WorkPeriodTracker.clearAll()`.
 - **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
+- **Month Balance view** (`ExtraHoursView`): monthly cards with worked/expected/extra/accumulated hours. Editable vacation days, holiday count, and holiday observation per month. Custom holidays adjust expected hours. All persisted to data.json.
 - Each imported entry is tagged with `sourceFile` for traceability
 
 ## Build & Run

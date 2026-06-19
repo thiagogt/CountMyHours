@@ -4,6 +4,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class BusinessDayService {
@@ -30,30 +33,41 @@ public class BusinessDayService {
     }
 
     public Set<LocalDate> getHolidays(int year) {
-        Set<LocalDate> holidays = new HashSet<>();
+        return getNamedHolidays(year).keySet();
+    }
 
-        // Fixed Brazilian national holidays
-        holidays.add(LocalDate.of(year, 1, 1));   // Ano Novo
-        holidays.add(LocalDate.of(year, 4, 21));  // Tiradentes
-        holidays.add(LocalDate.of(year, 5, 1));   // Dia do Trabalho
-        holidays.add(LocalDate.of(year, 9, 7));   // Independencia
-        holidays.add(LocalDate.of(year, 10, 12)); // Nossa Senhora Aparecida
-        holidays.add(LocalDate.of(year, 11, 2));  // Finados
-        holidays.add(LocalDate.of(year, 11, 15)); // Proclamacao da Republica
-        holidays.add(LocalDate.of(year, 11, 20)); // Consciencia Negra
-        holidays.add(LocalDate.of(year, 12, 25)); // Natal
+    public Map<LocalDate, String> getNamedHolidays(int year) {
+        Map<LocalDate, String> holidays = new LinkedHashMap<>();
 
-        // Sao Paulo state holiday
-        holidays.add(LocalDate.of(year, 7, 9));   // Revolucao Constitucionalista
+        holidays.put(LocalDate.of(year, 1, 1), "Ano Novo");
+        holidays.put(LocalDate.of(year, 4, 21), "Tiradentes");
+        holidays.put(LocalDate.of(year, 5, 1), "Dia do Trabalho");
+        holidays.put(LocalDate.of(year, 7, 9), "Rev. Constitucionalista");
+        holidays.put(LocalDate.of(year, 9, 7), "Independência");
+        holidays.put(LocalDate.of(year, 10, 12), "N.S. Aparecida");
+        holidays.put(LocalDate.of(year, 11, 2), "Finados");
+        holidays.put(LocalDate.of(year, 11, 15), "Proclamação da República");
+        holidays.put(LocalDate.of(year, 11, 20), "Consciência Negra");
+        holidays.put(LocalDate.of(year, 12, 25), "Natal");
 
-        // Moveable holidays (Easter-based)
         LocalDate easter = calculateEaster(year);
-        holidays.add(easter.minusDays(48)); // Carnival Monday
-        holidays.add(easter.minusDays(47)); // Carnival Tuesday
-        holidays.add(easter.minusDays(2));  // Good Friday (Sexta-feira Santa)
-        holidays.add(easter.plusDays(60));  // Corpus Christi
+        holidays.put(easter.minusDays(48), "Carnaval");
+        holidays.put(easter.minusDays(47), "Carnaval");
+        holidays.put(easter.minusDays(2), "Sexta-feira Santa");
+        holidays.put(easter.plusDays(60), "Corpus Christi");
 
         return holidays;
+    }
+
+    public List<Map.Entry<LocalDate, String>> getHolidaysInMonth(int year, int month) {
+        return getNamedHolidays(year).entrySet().stream()
+                .filter(e -> e.getKey().getMonthValue() == month)
+                .filter(e -> {
+                    DayOfWeek dow = e.getKey().getDayOfWeek();
+                    return dow != DayOfWeek.SATURDAY && dow != DayOfWeek.SUNDAY;
+                })
+                .sorted(Map.Entry.comparingByKey())
+                .toList();
     }
 
     /**

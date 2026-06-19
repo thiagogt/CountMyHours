@@ -48,6 +48,7 @@ XLSX files with the same column structure are also supported.
 - Import legacy spreadsheet data (pre-aggregated monthly format, 2017-2025)
 - **Spreadsheet mode**: create a template CSV and open in Numbers/Excel, then reimport
 - **Import history**: list of all imported files with Export and Delete per file
+- Month Balance view with editable vacation days, holidays, and observations per month
 - Auto-calculate expected monthly hours based on Brazilian business days
 - Dashboard with stats cards and stacked bar chart (filterable by year range)
 - Project timeline and yearly totals

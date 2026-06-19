@@ -1,6 +1,7 @@
 package com.countmyh.view;
 
 import com.countmyh.model.WorkPeriodTracker;
+import com.countmyh.service.BusinessDayService;
 import com.countmyh.service.CalculationService;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
@@ -24,6 +25,7 @@ public class MainView {
     private final StackPane contentArea;
     private final WorkPeriodTracker data;
     private final CalculationService calcService;
+    private final BusinessDayService businessDayService;
     private final JsonPersistenceService persistenceService;
     private final CsvImportService csvImportService;
 
@@ -36,9 +38,11 @@ public class MainView {
     private boolean viewsStale = false;
 
     public MainView(WorkPeriodTracker data, CalculationService calcService,
+                    BusinessDayService businessDayService,
                     JsonPersistenceService persistenceService, CsvImportService csvImportService) {
         this.data = data;
         this.calcService = calcService;
+        this.businessDayService = businessDayService;
         this.persistenceService = persistenceService;
         this.csvImportService = csvImportService;
 
@@ -125,7 +129,7 @@ public class MainView {
     }
 
     private Node getExtraHoursView() {
-        extraHoursView = new ExtraHoursView(data, calcService);
+        extraHoursView = new ExtraHoursView(data, calcService, businessDayService, persistenceService);
         return extraHoursView.getRoot();
     }
 

@@ -1,38 +1,58 @@
 package com.countmyh.view;
 
+import com.countmyh.model.MonthNote;
 import com.countmyh.model.WorkPeriodTracker;
+import com.countmyh.service.BusinessDayService;
 import com.countmyh.service.CalculationService;
+import com.countmyh.service.JsonPersistenceService;
 import com.countmyh.util.I18n;
 import com.countmyh.util.MonthNames;
+import com.countmyh.util.Toast;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class ExtraHoursView {
 
     private final WorkPeriodTracker data;
     private final CalculationService calcService;
+    private final BusinessDayService businessDayService;
+    private final JsonPersistenceService persistenceService;
     private final VBox content;
+    private final StackPane rootStack;
     private FlowPane cardsPane;
-    private int initialStartYear;
-    private int initialEndYear;
+    private int currentStartYear;
+    private int currentEndYear;
 
-    public ExtraHoursView(WorkPeriodTracker data, CalculationService calcService) {
+    public ExtraHoursView(WorkPeriodTracker data, CalculationService calcService,
+                          BusinessDayService businessDayService, JsonPersistenceService persistenceService) {
         this.data = data;
         this.calcService = calcService;
+        this.businessDayService = businessDayService;
+        this.persistenceService = persistenceService;
         this.content = new VBox(20);
         this.content.setPadding(new Insets(24));
+        this.rootStack = new StackPane();
         build();
     }
 
@@ -52,7 +72,7 @@ public class ExtraHoursView {
         cardsPane.setPadding(new Insets(8, 0, 0, 0));
 
         container.getChildren().addAll(sectionTitle, filters);
-        buildCards(initialStartYear, initialEndYear);
+        buildCards(currentStartYear, currentEndYear);
         container.getChildren().add(cardsPane);
 
         content.getChildren().addAll(title, container);
@@ -70,7 +90,7 @@ public class ExtraHoursView {
         box.getChildren().add(allBtn);
 
         var yearlyTotals = new TreeMap<>(calcService.getYearlyTotals(data));
-        int currentYear = java.time.LocalDate.now().getYear();
+        int curYear = java.time.LocalDate.now().getYear();
         ToggleButton defaultBtn = allBtn;
 
         for (int year : yearlyTotals.keySet()) {
@@ -79,7 +99,7 @@ public class ExtraHoursView {
             btn.setToggleGroup(group);
             btn.setOnAction(e -> buildCards(year, year));
             box.getChildren().add(btn);
-            if (year == currentYear) {
+            if (year == curYear) {
                 defaultBtn = btn;
             }
         }
@@ -97,17 +117,19 @@ public class ExtraHoursView {
         defaultBtn.setSelected(true);
         if (defaultBtn != allBtn) {
             int y = Integer.parseInt(defaultBtn.getText());
-            initialStartYear = y;
-            initialEndYear = y;
+            currentStartYear = y;
+            currentEndYear = y;
         } else {
-            initialStartYear = 0;
-            initialEndYear = 9999;
+            currentStartYear = 0;
+            currentEndYear = 9999;
         }
 
         return box;
     }
 
     private void buildCards(int startYear, int endYear) {
+        currentStartYear = startYear;
+        currentEndYear = endYear;
         cardsPane.getChildren().clear();
 
         Map<YearMonth, CalculationService.MonthlyBalance> balance = calcService.getMonthlyBalance(data);
@@ -118,10 +140,10 @@ public class ExtraHoursView {
             if (ym.getYear() < startYear || ym.getYear() > endYear) continue;
 
             var mb = entry.getValue();
-            int days = (int) (mb.expected() / 8);
+            int totalBusinessDays = businessDayService.getBusinessDays(ym.getYear(), ym.getMonthValue());
             runningExtra += mb.extra();
 
-            cardsPane.getChildren().add(buildMonthCard(ym, mb, days, runningExtra));
+            cardsPane.getChildren().add(buildMonthCard(ym, mb, totalBusinessDays, runningExtra));
         }
 
         if (cardsPane.getChildren().isEmpty()) {
@@ -133,7 +155,7 @@ public class ExtraHoursView {
 
     private Node buildMonthCard(YearMonth ym, CalculationService.MonthlyBalance mb, int businessDays, double accumulated) {
         var card = new VBox(4);
-        card.setPrefWidth(175);
+        card.setPrefWidth(210);
         card.setPadding(new Insets(12));
         card.setStyle("-fx-background-color: #1a1d27; -fx-border-color: #2a2d3a; "
                 + "-fx-border-radius: 10; -fx-background-radius: 10;");
@@ -141,8 +163,21 @@ public class ExtraHoursView {
         var header = new Label(MonthNames.label(ym.getYear(), ym.getMonthValue()));
         header.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
+        var autoHolidays = businessDayService.getHolidaysInMonth(ym.getYear(), ym.getMonthValue());
+        var monthNote = data.getMonthNote(ym.getYear(), ym.getMonthValue());
+        int holidayCount = monthNote != null ? monthNote.holidays() : autoHolidays.size();
+        String defaultObs = autoHolidays.stream()
+                .map(e -> e.getKey().format(DateTimeFormatter.ofPattern("dd")) + " " + e.getValue())
+                .collect(Collectors.joining(", "));
+        String observation = monthNote != null ? monthNote.observation() : defaultObs;
+
+        int effectiveDays = businessDays - (holidayCount - autoHolidays.size()) - mb.vacationDays();
         var workedRow = buildRow(I18n.get("extra.worked"), String.format("%.0fh", mb.worked()), "#e4e4e7");
-        var expectedRow = buildRow(I18n.get("extra.expected"), String.format("%.0fh (%dd)", mb.expected(), businessDays), "#8b8d97");
+        var expectedRow = buildRow(I18n.get("extra.expected"), String.format("%.0fh (%dd)", mb.expected(), effectiveDays), "#8b8d97");
+
+        var holidayRow = buildHolidayRow(ym, holidayCount);
+        var obsRow = buildObservationRow(ym, observation, holidayCount);
+        var vacationRow = buildVacationRow(ym, mb.vacationDays());
 
         String extraColor = mb.extra() >= 0 ? "#22c55e" : "#ef4444";
         String extraSign = mb.extra() >= 0 ? "+" : "";
@@ -156,8 +191,92 @@ public class ExtraHoursView {
         String accSign = accumulated >= 0 ? "+" : "";
         var accRow = buildRow(I18n.get("extra.accumulated"), accSign + String.format("%.0fh", accumulated), accColor);
 
-        card.getChildren().addAll(header, workedRow, expectedRow, extraRow, sep, accRow);
+        card.getChildren().addAll(header, workedRow, expectedRow, holidayRow, obsRow, vacationRow, extraRow, sep, accRow);
         return card;
+    }
+
+    private HBox buildHolidayRow(YearMonth ym, int currentCount) {
+        var lbl = new Label(I18n.get("extra.holidays"));
+        lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+        lbl.setMinWidth(70);
+
+        var spinner = new Spinner<Integer>();
+        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 15, currentCount));
+        spinner.setPrefWidth(65);
+        spinner.setPrefHeight(22);
+        spinner.setStyle("-fx-font-size: 11px;");
+        spinner.setEditable(true);
+
+        var dayLabel = new Label("d");
+        dayLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+
+        spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.equals(oldVal)) return;
+            var existing = data.getMonthNote(ym.getYear(), ym.getMonthValue());
+            String currentObs = existing != null ? existing.observation() : "";
+            data.setMonthNote(ym.getYear(), ym.getMonthValue(), newVal, currentObs);
+            saveAndRefresh();
+        });
+
+        var row = new HBox(4, lbl, spinner, dayLabel);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private Node buildObservationRow(YearMonth ym, String observation, int holidayCount) {
+        var field = new TextField(observation);
+        field.setPromptText(I18n.get("extra.obs.prompt"));
+        field.setStyle("-fx-font-size: 10px; -fx-padding: 3 6; -fx-background-color: #0f1117; "
+                + "-fx-text-fill: #f59e0b; -fx-border-color: #2a2d3a; -fx-border-radius: 4; -fx-background-radius: 4;");
+        field.setPrefHeight(24);
+
+        field.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                data.setMonthNote(ym.getYear(), ym.getMonthValue(), holidayCount, field.getText());
+                saveQuietly();
+            }
+        });
+
+        return field;
+    }
+
+    private HBox buildVacationRow(YearMonth ym, int currentDays) {
+        var lbl = new Label(I18n.get("extra.vacation"));
+        lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+        lbl.setMinWidth(70);
+
+        var spinner = new Spinner<Integer>();
+        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 30, currentDays));
+        spinner.setPrefWidth(65);
+        spinner.setPrefHeight(22);
+        spinner.setStyle("-fx-font-size: 11px;");
+        spinner.setEditable(true);
+
+        var dayLabel = new Label("d");
+        dayLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+
+        spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.equals(oldVal)) return;
+            data.setVacation(ym.getYear(), ym.getMonthValue(), newVal);
+            saveAndRefresh();
+        });
+
+        var row = new HBox(4, lbl, spinner, dayLabel);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private void saveAndRefresh() {
+        saveQuietly();
+        buildCards(currentStartYear, currentEndYear);
+    }
+
+    private void saveQuietly() {
+        try {
+            persistenceService.save(data);
+        } catch (IOException ex) {
+            Toast.show(rootStack, I18n.get("toast.save.failed", ex.getMessage()), Toast.Type.ERROR);
+        }
     }
 
     private HBox buildRow(String label, String value, String valueColor) {
@@ -177,6 +296,7 @@ public class ExtraHoursView {
         var scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        return scrollPane;
+        rootStack.getChildren().add(scrollPane);
+        return rootStack;
     }
 }
