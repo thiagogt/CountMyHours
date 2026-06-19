@@ -128,6 +128,24 @@ class WorkPeriodTrackerTest {
     }
 
     @Test
+    void clearAllShouldResetEverything() {
+        var tracker = new WorkPeriodTracker();
+        tracker.addEntry(new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0));
+        tracker.addHourSelling(new WorkHourSelling(2026, 10, 0, "note"));
+        tracker.addImportRecord(new ImportRecord("f.csv", "/p/f.csv", LocalDateTime.now(), 1));
+        tracker.setLastImportDate(LocalDateTime.now());
+        tracker.setLastSourceFile("/p/f.csv");
+
+        tracker.clearAll();
+
+        assertTrue(tracker.getEntries().isEmpty());
+        assertTrue(tracker.getHourSellings().isEmpty());
+        assertTrue(tracker.getImportHistory().isEmpty());
+        assertNull(tracker.getLastImportDate());
+        assertNull(tracker.getLastSourceFile());
+    }
+
+    @Test
     void shouldRemoveImportRecord() {
         var tracker = new WorkPeriodTracker();
         var record = new ImportRecord("f.csv", "/p/f.csv", LocalDateTime.now(), 10);

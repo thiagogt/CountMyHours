@@ -90,4 +90,12 @@ public class WorkPeriodTracker {
     public void removeImportRecord(ImportRecord record) {
         importHistory.remove(record);
     }
+
+    public void clearAll() {
+        entries.clear();
+        hourSellings.clear();
+        importHistory.clear();
+        lastImportDate = null;
+        lastSourceFile = null;
+    }
 }

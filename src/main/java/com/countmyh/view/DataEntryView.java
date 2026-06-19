@@ -114,10 +114,17 @@ public class DataEntryView {
         totalLabel.setStyle("-fx-text-fill: #8b8d97;");
         info.getChildren().add(totalLabel);
 
+        var btnEraseAll = new Button("Erase All Data");
+        btnEraseAll.setStyle("-fx-background-color: #ef4444;");
+        btnEraseAll.setOnAction(e -> handleEraseAllData());
+
         var buttons = new HBox(12, btnNewSheet, btnExportEdit, btnImport, btnReimport);
         buttons.setAlignment(Pos.CENTER_LEFT);
 
-        container.getChildren().addAll(sectionTitle, buttons, desc, info);
+        var dangerZone = new HBox(12, btnEraseAll);
+        dangerZone.setAlignment(Pos.CENTER_LEFT);
+
+        container.getChildren().addAll(sectionTitle, buttons, desc, info, dangerZone);
         return container;
     }
 
@@ -490,6 +497,42 @@ public class DataEntryView {
             statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
             statusLabel.setText("Import failed: " + ex.getMessage());
         }
+    }
+
+    private void handleEraseAllData() {
+        if (data.getEntries().isEmpty()) {
+            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+            statusLabel.setText("No data to erase");
+            return;
+        }
+
+        var alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Erase All Data");
+        alert.setHeaderText("Are you sure you want to erase all data?");
+        alert.setContentText("This will permanently delete all entries, hour sellings, and import history. This action is irreversible.");
+        alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+
+        var result = alert.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) return;
+
+        int totalEntries = data.getEntries().size();
+        data.clearAll();
+
+        try {
+            persistenceService.save(data);
+        } catch (IOException ex) {
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            statusLabel.setText("Save failed: " + ex.getMessage());
+            return;
+        }
+
+        statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
+        statusLabel.setText("Erased all data (" + totalEntries + " entries removed)");
+
+        refreshImportHistory();
+        refreshFilters();
+        applyFilters();
+        onDataChanged.run();
     }
 
     private void writeCsvTemplate(File file) throws IOException {
