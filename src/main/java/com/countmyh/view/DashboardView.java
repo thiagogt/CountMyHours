@@ -3,7 +3,6 @@ package com.countmyh.view;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CalculationService;
 import com.countmyh.util.ChartStyler;
-import com.countmyh.util.ColorPalette;
 import com.countmyh.util.I18n;
 import com.countmyh.util.MonthNames;
 import javafx.geometry.Insets;
@@ -19,7 +18,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.time.YearMonth;
@@ -116,7 +114,7 @@ public class DashboardView {
         var allBtn = new ToggleButton(I18n.get("dashboard.all"));
         allBtn.getStyleClass().add("filter-button");
         allBtn.setToggleGroup(group);
-        allBtn.setOnAction(e -> buildChart(0, 9999));
+        allBtn.setOnAction(_ -> buildChart(0, 9999));
         box.getChildren().add(allBtn);
 
         var yearlyTotals = new TreeMap<>(calcService.getYearlyTotals(data));
@@ -127,7 +125,7 @@ public class DashboardView {
             var btn = new ToggleButton(String.valueOf(year));
             btn.getStyleClass().add("filter-button");
             btn.setToggleGroup(group);
-            btn.setOnAction(e -> buildChart(year, year));
+            btn.setOnAction(_ -> buildChart(year, year));
             box.getChildren().add(btn);
             if (year == currentYear) {
                 defaultBtn = btn;
@@ -173,7 +171,7 @@ public class DashboardView {
         var yAxis = new NumberAxis();
         yAxis.setLabel(I18n.get("dashboard.hours.label"));
 
-        var chart = new StackedBarChart<String, Number>(xAxis, yAxis);
+        var chart = new StackedBarChart<>(xAxis, yAxis);
         chart.setAnimated(false);
         chart.setPrefHeight(450);
         chart.setLegendVisible(true);

@@ -1,6 +1,5 @@
 package com.countmyh.view;
 
-import com.countmyh.model.MonthNote;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.BusinessDayService;
 import com.countmyh.service.CalculationService;
@@ -24,10 +23,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -86,7 +83,7 @@ public class ExtraHoursView {
         var allBtn = new ToggleButton(I18n.get("dashboard.all"));
         allBtn.getStyleClass().add("filter-button");
         allBtn.setToggleGroup(group);
-        allBtn.setOnAction(e -> buildCards(0, 9999));
+        allBtn.setOnAction(_ -> buildCards(0, 9999));
         box.getChildren().add(allBtn);
 
         var yearlyTotals = new TreeMap<>(calcService.getYearlyTotals(data));
@@ -97,7 +94,7 @@ public class ExtraHoursView {
             var btn = new ToggleButton(String.valueOf(year));
             btn.getStyleClass().add("filter-button");
             btn.setToggleGroup(group);
-            btn.setOnAction(e -> buildCards(year, year));
+            btn.setOnAction(_ -> buildCards(year, year));
             box.getChildren().add(btn);
             if (year == curYear) {
                 defaultBtn = btn;
@@ -210,7 +207,7 @@ public class ExtraHoursView {
         var dayLabel = new Label("d");
         dayLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
 
-        spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+        spinner.valueProperty().addListener((_, oldVal, newVal) -> {
             if (newVal == null || newVal.equals(oldVal)) return;
             var existing = data.getMonthNote(ym.getYear(), ym.getMonthValue());
             String currentObs = existing != null ? existing.observation() : "";
@@ -230,7 +227,7 @@ public class ExtraHoursView {
                 + "-fx-text-fill: #f59e0b; -fx-border-color: #2a2d3a; -fx-border-radius: 4; -fx-background-radius: 4;");
         field.setPrefHeight(24);
 
-        field.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+        field.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused) {
                 data.setMonthNote(ym.getYear(), ym.getMonthValue(), holidayCount, field.getText());
                 saveQuietly();
@@ -255,7 +252,7 @@ public class ExtraHoursView {
         var dayLabel = new Label("d");
         dayLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
 
-        spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+        spinner.valueProperty().addListener((_, oldVal, newVal) -> {
             if (newVal == null || newVal.equals(oldVal)) return;
             data.setVacation(ym.getYear(), ym.getMonthValue(), newVal);
             saveAndRefresh();
