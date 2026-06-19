@@ -44,13 +44,13 @@ class JsonPersistenceServiceTest {
         var loaded = service.load();
 
         assertEquals(2, loaded.getEntries().size());
-        assertEquals("Opus", loaded.getEntries().getFirst().getClient());
-        assertEquals("Medscript", loaded.getEntries().getFirst().getProject());
-        assertEquals(LocalDate.of(2026, 6, 1), loaded.getEntries().getFirst().getDate());
-        assertEquals(8.0, loaded.getEntries().getFirst().getHours());
+        assertEquals("Opus", loaded.getEntries().getFirst().client());
+        assertEquals("Medscript", loaded.getEntries().getFirst().project());
+        assertEquals(LocalDate.of(2026, 6, 1), loaded.getEntries().getFirst().date());
+        assertEquals(8.0, loaded.getEntries().getFirst().hours());
 
         assertEquals(1, loaded.getHourSellings().size());
-        assertEquals(70, loaded.getHourSellings().getFirst().getHoursSold());
+        assertEquals(70, loaded.getHourSellings().getFirst().hoursSold());
 
         assertEquals(LocalDateTime.of(2026, 6, 18, 10, 0), loaded.getLastImportDate());
         assertEquals("/path/to/file.csv", loaded.getLastSourceFile());
@@ -100,6 +100,6 @@ class JsonPersistenceServiceTest {
 
         var loaded = service.load();
         assertEquals(1, loaded.getEntries().size());
-        assertEquals("B", loaded.getEntries().getFirst().getClient());
+        assertEquals("B", loaded.getEntries().getFirst().client());
     }
 }

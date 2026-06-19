@@ -100,12 +100,9 @@ class WorkPeriodTrackerTest {
     @Test
     void shouldRemoveEntriesBySource() {
         var tracker = new WorkPeriodTracker();
-        var item1 = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0);
-        item1.setSourceFile("/path/a.csv");
-        var item2 = new WorkHourItem(LocalDate.of(2026, 6, 2), "A", "P1", "t", 8.0);
-        item2.setSourceFile("/path/b.csv");
-        var item3 = new WorkHourItem(LocalDate.of(2026, 6, 3), "A", "P1", "t", 8.0);
-        item3.setSourceFile("/path/a.csv");
+        var item1 = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0, "/path/a.csv");
+        var item2 = new WorkHourItem(LocalDate.of(2026, 6, 2), "A", "P1", "t", 8.0, "/path/b.csv");
+        var item3 = new WorkHourItem(LocalDate.of(2026, 6, 3), "A", "P1", "t", 8.0, "/path/a.csv");
 
         tracker.addEntry(item1);
         tracker.addEntry(item2);
@@ -115,14 +112,13 @@ class WorkPeriodTrackerTest {
 
         assertEquals(2, removed);
         assertEquals(1, tracker.getEntries().size());
-        assertEquals("/path/b.csv", tracker.getEntries().getFirst().getSourceFile());
+        assertEquals("/path/b.csv", tracker.getEntries().getFirst().sourceFile());
     }
 
     @Test
     void removeEntriesBySourceShouldReturnZeroWhenNoMatch() {
         var tracker = new WorkPeriodTracker();
-        var item = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0);
-        item.setSourceFile("/path/a.csv");
+        var item = new WorkHourItem(LocalDate.of(2026, 6, 1), "A", "P1", "t", 8.0, "/path/a.csv");
         tracker.addEntry(item);
 
         int removed = tracker.removeEntriesBySource("/path/nonexistent.csv");

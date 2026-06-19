@@ -24,13 +24,13 @@ public class CalculationService {
 
     public Map<String, Map<YearMonth, Double>> getMonthlyHoursByProject(WorkPeriodTracker data, int startYear, int endYear) {
         return data.getEntries().stream()
-                .filter(e -> e.getYear() >= startYear && e.getYear() <= endYear)
+                .filter(e -> e.year() >= startYear && e.year() <= endYear)
                 .collect(Collectors.groupingBy(
-                        WorkHourItem::getProject,
+                        WorkHourItem::project,
                         Collectors.groupingBy(
-                                e -> YearMonth.of(e.getYear(), e.getMonth()),
+                                e -> YearMonth.of(e.year(), e.month()),
                                 TreeMap::new,
-                                Collectors.summingDouble(WorkHourItem::getHours)
+                                Collectors.summingDouble(WorkHourItem::hours)
                         )
                 ));
     }
@@ -38,18 +38,18 @@ public class CalculationService {
     public Map<YearMonth, Double> getMonthlyTotalWorked(WorkPeriodTracker data) {
         return data.getEntries().stream()
                 .collect(Collectors.groupingBy(
-                        e -> YearMonth.of(e.getYear(), e.getMonth()),
+                        e -> YearMonth.of(e.year(), e.month()),
                         TreeMap::new,
-                        Collectors.summingDouble(WorkHourItem::getHours)
+                        Collectors.summingDouble(WorkHourItem::hours)
                 ));
     }
 
     public Map<Integer, Double> getYearlyTotals(WorkPeriodTracker data) {
         return data.getEntries().stream()
                 .collect(Collectors.groupingBy(
-                        WorkHourItem::getYear,
+                        WorkHourItem::year,
                         TreeMap::new,
-                        Collectors.summingDouble(WorkHourItem::getHours)
+                        Collectors.summingDouble(WorkHourItem::hours)
                 ));
     }
 
@@ -71,7 +71,7 @@ public class CalculationService {
     public Map<Integer, YearlyBalance> getYearlyBalance(WorkPeriodTracker data) {
         Map<YearMonth, MonthlyBalance> monthly = getMonthlyBalance(data);
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::getYear, s -> s, (a, b) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
 
         Map<Integer, YearlyBalance> result = new TreeMap<>();
 
@@ -88,9 +88,9 @@ public class CalculationService {
             int year = entry.getKey();
             double gross = entry.getValue();
             WorkHourSelling selling = sellingByYear.get(year);
-            double sold = selling != null ? selling.getHoursSold() : 0;
-            double vacationSold = selling != null ? selling.getVacationDaysSold() : 0;
-            String note = selling != null ? selling.getNote() : null;
+            double sold = selling != null ? selling.hoursSold() : 0;
+            double vacationSold = selling != null ? selling.vacationDaysSold() : 0;
+            String note = selling != null ? selling.note() : null;
 
             result.put(year, new YearlyBalance(
                     yearlyWorked.getOrDefault(year, 0.0),
@@ -107,7 +107,7 @@ public class CalculationService {
                 data, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::getYear, s -> s, (a, b) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
 
         Map<String, Double> projectGrossExtra = new LinkedHashMap<>();
         Map<String, Double> projectTotalHours = new LinkedHashMap<>();
@@ -147,7 +147,7 @@ public class CalculationService {
 
         for (var sellingEntry : sellingByYear.entrySet()) {
             int year = sellingEntry.getKey();
-            double yearSold = sellingEntry.getValue().getHoursSold();
+            double yearSold = sellingEntry.getValue().hoursSold();
             if (yearSold <= 0) continue;
 
             double totalPositive = 0;
@@ -183,21 +183,21 @@ public class CalculationService {
 
     public List<ProjectSummary> getProjectSummaries(WorkPeriodTracker data) {
         return data.getEntries().stream()
-                .collect(Collectors.groupingBy(WorkHourItem::getProject))
+                .collect(Collectors.groupingBy(WorkHourItem::project))
                 .entrySet().stream()
                 .map(e -> {
                     String project = e.getKey();
                     List<WorkHourItem> items = e.getValue();
-                    String client = items.getFirst().getClient();
-                    double totalHours = items.stream().mapToDouble(WorkHourItem::getHours).sum();
+                    String client = items.getFirst().client();
+                    double totalHours = items.stream().mapToDouble(WorkHourItem::hours).sum();
                     YearMonth first = items.stream()
-                            .map(i -> YearMonth.of(i.getYear(), i.getMonth()))
+                            .map(i -> YearMonth.of(i.year(), i.month()))
                             .min(Comparator.naturalOrder()).orElse(null);
                     YearMonth last = items.stream()
-                            .map(i -> YearMonth.of(i.getYear(), i.getMonth()))
+                            .map(i -> YearMonth.of(i.year(), i.month()))
                             .max(Comparator.naturalOrder()).orElse(null);
                     long activeMonths = items.stream()
-                            .map(i -> YearMonth.of(i.getYear(), i.getMonth()))
+                            .map(i -> YearMonth.of(i.year(), i.month()))
                             .distinct().count();
                     return new ProjectSummary(project, client, first, last, (int) activeMonths, totalHours);
                 })
@@ -206,12 +206,12 @@ public class CalculationService {
     }
 
     public double getTotalHours(WorkPeriodTracker data) {
-        return data.getEntries().stream().mapToDouble(WorkHourItem::getHours).sum();
+        return data.getEntries().stream().mapToDouble(WorkHourItem::hours).sum();
     }
 
     public int getTotalProjects(WorkPeriodTracker data) {
         return (int) data.getEntries().stream()
-                .map(WorkHourItem::getProject)
+                .map(WorkHourItem::project)
                 .filter(p -> !p.equalsIgnoreCase("admin"))
                 .distinct().count();
     }
@@ -230,7 +230,7 @@ public class CalculationService {
 
     public double getTotalSold(WorkPeriodTracker data) {
         return data.getHourSellings().stream()
-                .mapToDouble(WorkHourSelling::getHoursSold).sum();
+                .mapToDouble(WorkHourSelling::hoursSold).sum();
     }
 
     public double getNetBalance(WorkPeriodTracker data) {
@@ -239,16 +239,16 @@ public class CalculationService {
 
     public Map<String, YearMonth[]> getProjectDateRanges(WorkPeriodTracker data) {
         return data.getEntries().stream()
-                .collect(Collectors.groupingBy(WorkHourItem::getProject))
+                .collect(Collectors.groupingBy(WorkHourItem::project))
                 .entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         e -> {
                             YearMonth min = e.getValue().stream()
-                                    .map(i -> YearMonth.of(i.getYear(), i.getMonth()))
+                                    .map(i -> YearMonth.of(i.year(), i.month()))
                                     .min(Comparator.naturalOrder()).orElse(null);
                             YearMonth max = e.getValue().stream()
-                                    .map(i -> YearMonth.of(i.getYear(), i.getMonth()))
+                                    .map(i -> YearMonth.of(i.year(), i.month()))
                                     .max(Comparator.naturalOrder()).orElse(null);
                             return new YearMonth[]{min, max};
                         }

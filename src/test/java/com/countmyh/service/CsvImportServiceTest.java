@@ -38,11 +38,11 @@ class CsvImportServiceTest {
         List<WorkHourItem> items = service.importFile(csv);
 
         assertEquals(3, items.size());
-        assertEquals("Medscript", items.get(0).getProject());
-        assertEquals(LocalDate.of(2026, 6, 1), items.get(0).getDate());
-        assertEquals(8.0, items.get(0).getHours());
-        assertEquals("Opus", items.get(0).getClient());
-        assertEquals("MED-238, PR", items.get(0).getItem());
+        assertEquals("Medscript", items.getFirst().project());
+        assertEquals(LocalDate.of(2026, 6, 1), items.getFirst().date());
+        assertEquals(8.0, items.getFirst().hours());
+        assertEquals("Opus", items.getFirst().client());
+        assertEquals("MED-238, PR", items.getFirst().item());
     }
 
     @Test
@@ -122,7 +122,7 @@ class CsvImportServiceTest {
 
         List<WorkHourItem> items = service.importFile(csv);
         assertEquals(1, items.size());
-        assertEquals(4.5, items.getFirst().getHours());
+        assertEquals(4.5, items.getFirst().hours());
     }
 
     @Test

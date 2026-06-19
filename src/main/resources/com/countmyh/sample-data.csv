@@ -1,0 +1,201 @@
+Data;Cliente;Projeto;Item;Hs
+02/01/2026;Monsters SA;Wasowski;SCARE-101, scare simulator fix;8
+02/01/2026;Pixar Inc;Toy Story Ops;TOY-281, buzz deployment pipeline;4
+05/01/2026;Monsters SA;Wasowski;SCARE-102, scream canister refactor;8
+05/01/2026;Disney Parks;Space Mountain;SPACE-282, ride telemetry;4
+06/01/2026;Pixar Inc;Toy Story Ops;TOY-103, hamm billing module;8
+06/01/2026;Disney Parks;Space Mountain;SPACE-283, lighting controller;4
+07/01/2026;Monsters SA;Wasowski;SCARE-104, door calibration;6
+07/01/2026;Monsters SA;admin;1:1 meeting;2
+07/01/2026;Monsters SA;Wasowski;SCARE-284, scream canister refactor;4
+08/01/2026;Disney Parks;Space Mountain;SPACE-106, lighting controller;4
+08/01/2026;Monsters SA;Wasowski;SCARE-107, door station upgrade;4
+08/01/2026;Pixar Inc;Toy Story Ops;TOY-285, hamm billing module;4
+09/01/2026;Monsters SA;Wasowski;SCARE-108, energy converter;8
+09/01/2026;Monsters SA;admin;daily standup;4
+12/01/2026;Pixar Inc;Toy Story Ops;TOY-109, rex error handler;8
+12/01/2026;Pixar Inc;Ratatouille;RAT-287, kitchen integration;4
+13/01/2026;Monsters SA;Wasowski;SCARE-110, scream canister refactor;8
+13/01/2026;Monsters SA;Wasowski;SCARE-288, door station upgrade;4
+14/01/2026;Monsters SA;Boo Tracker;BOO-111, laugh energy research;8
+14/01/2026;Monsters SA;Wasowski;SCARE-289, energy converter;4
+15/01/2026;Monsters SA;Boo Tracker;BOO-112, portal detector;4
+15/01/2026;Pixar Inc;Ratatouille;RAT-113, menu generator;4
+15/01/2026;Monsters SA;admin;1:1 meeting;4
+16/01/2026;Disney Parks;Space Mountain;SPACE-114, lighting controller;8
+16/01/2026;Pixar Inc;Ratatouille;RAT-291, chef dashboard;4
+19/01/2026;Monsters SA;Boo Tracker;BOO-115, laugh energy research;8
+19/01/2026;Monsters SA;Boo Tracker;BOO-292, child return system;4
+20/01/2026;Pixar Inc;Toy Story Ops;TOY-116, hamm billing module;8
+20/01/2026;Pixar Inc;Ratatouille;RAT-293, chef dashboard;4
+21/01/2026;Monsters SA;Boo Tracker;BOO-117, safety audit;8
+21/01/2026;Monsters SA;Boo Tracker;BOO-294, safety audit;4
+22/01/2026;Monsters SA;Wasowski;SCARE-118, scare simulator fix;4
+22/01/2026;Disney Parks;Space Mountain;SPACE-119, safety sensor API;4
+22/01/2026;Monsters SA;admin;sprint planning;4
+23/01/2026;Monsters SA;Wasowski;SCARE-120, energy converter;8
+23/01/2026;Disney Parks;Space Mountain;SPACE-296, lighting controller;4
+26/01/2026;Monsters SA;admin;retrospective;6
+26/01/2026;Monsters SA;Wasowski;SCARE-122, laugh floor dashboard;2
+26/01/2026;Monsters SA;admin;retrospective;4
+27/01/2026;Pixar Inc;Toy Story Ops;TOY-123, slinky load balancer;8
+27/01/2026;Disney Parks;Space Mountain;SPACE-298, queue estimator;4
+28/01/2026;Pixar Inc;Toy Story Ops;TOY-124, buzz deployment pipeline;8
+28/01/2026;Pixar Inc;Toy Story Ops;TOY-299, slinky load balancer;4
+29/01/2026;Monsters SA;Wasowski;SCARE-125, code review;8
+29/01/2026;Disney Parks;Space Mountain;SPACE-300, lighting controller;4
+30/01/2026;Monsters SA;Wasowski;SCARE-126, door station upgrade;8
+02/02/2026;Pixar Inc;Toy Story Ops;TOY-127, hamm billing module;8
+03/02/2026;Monsters SA;Boo Tracker;BOO-128, laugh energy research;8
+04/02/2026;Monsters SA;Wasowski;SCARE-129, energy converter;8
+05/02/2026;Monsters SA;Wasowski;SCARE-130, door calibration;8
+06/02/2026;Pixar Inc;Ratatouille;RAT-131, menu generator;8
+09/02/2026;Monsters SA;admin;tech review;8
+10/02/2026;Pixar Inc;Toy Story Ops;TOY-133, rex error handler;8
+11/02/2026;Monsters SA;Wasowski;SCARE-134, scare simulator fix;4
+11/02/2026;Pixar Inc;Ratatouille;RAT-135, chef dashboard;4
+12/02/2026;Pixar Inc;Ratatouille;RAT-136, ingredient parser;8
+13/02/2026;Monsters SA;Boo Tracker;BOO-137, portal detector;8
+18/02/2026;Monsters SA;Wasowski;SCARE-138, code review;8
+19/02/2026;Disney Parks;Space Mountain;SPACE-139, ride telemetry;8
+20/02/2026;Monsters SA;Wasowski;SCARE-140, scare simulator fix;8
+23/02/2026;Monsters SA;Boo Tracker;BOO-141, safety audit;5
+23/02/2026;Monsters SA;Wasowski;SCARE-142, door station upgrade;3
+24/02/2026;Monsters SA;admin;1:1 meeting;8
+25/02/2026;Pixar Inc;Ratatouille;RAT-144, recipe API;8
+26/02/2026;Monsters SA;Wasowski;SCARE-145, scare simulator fix;8
+27/02/2026;Disney Parks;Space Mountain;SPACE-146, safety sensor API;8
+02/03/2026;Monsters SA;Boo Tracker;BOO-147, laugh energy research;8
+03/03/2026;Monsters SA;Wasowski;SCARE-148, door station upgrade;8
+04/03/2026;Disney Parks;Space Mountain;SPACE-149, safety sensor API;5
+04/03/2026;Monsters SA;admin;sprint planning;3
+05/03/2026;Monsters SA;Wasowski;SCARE-151, energy converter;8
+06/03/2026;Pixar Inc;Toy Story Ops;TOY-152, hamm billing module;8
+09/03/2026;Monsters SA;Wasowski;SCARE-153, laugh floor dashboard;8
+10/03/2026;Pixar Inc;Ratatouille;RAT-154, chef dashboard;8
+11/03/2026;Pixar Inc;Ratatouille;RAT-155, menu generator;8
+12/03/2026;Monsters SA;Wasowski;SCARE-156, laugh floor dashboard;8
+13/03/2026;Monsters SA;Boo Tracker;BOO-157, containment protocol;8
+16/03/2026;Monsters SA;Wasowski;SCARE-158, door calibration;5
+16/03/2026;Disney Parks;Space Mountain;SPACE-159, lighting controller;3
+17/03/2026;Disney Parks;Space Mountain;SPACE-160, queue estimator;8
+18/03/2026;Pixar Inc;Ratatouille;RAT-161, kitchen integration;6
+18/03/2026;Monsters SA;Wasowski;SCARE-162, code review;2
+19/03/2026;Monsters SA;Boo Tracker;BOO-163, containment protocol;8
+20/03/2026;Disney Parks;Space Mountain;SPACE-164, queue estimator;8
+23/03/2026;Monsters SA;Boo Tracker;BOO-165, portal detector;8
+24/03/2026;Pixar Inc;Ratatouille;RAT-166, ingredient parser;8
+25/03/2026;Monsters SA;Wasowski;SCARE-167, laugh floor dashboard;4
+25/03/2026;Pixar Inc;Ratatouille;RAT-168, chef dashboard;4
+26/03/2026;Monsters SA;Wasowski;SCARE-169, door calibration;8
+27/03/2026;Monsters SA;Wasowski;SCARE-170, scream canister refactor;5
+27/03/2026;Monsters SA;Boo Tracker;BOO-171, laugh energy research;3
+30/03/2026;Monsters SA;Boo Tracker;BOO-172, child return system;8
+31/03/2026;Monsters SA;Wasowski;SCARE-173, scare simulator fix;8
+01/04/2026;Pixar Inc;Ratatouille;RAT-174, chef dashboard;8
+02/04/2026;Monsters SA;admin;tech review;8
+06/04/2026;Pixar Inc;Toy Story Ops;TOY-176, rex error handler;4
+06/04/2026;Monsters SA;Boo Tracker;BOO-177, child return system;4
+07/04/2026;Disney Parks;Space Mountain;SPACE-178, ride telemetry;8
+08/04/2026;Pixar Inc;Toy Story Ops;TOY-179, buzz deployment pipeline;8
+09/04/2026;Monsters SA;Boo Tracker;BOO-180, laugh energy research;5
+09/04/2026;Monsters SA;Wasowski;SCARE-181, scream canister refactor;3
+10/04/2026;Monsters SA;Wasowski;SCARE-182, door station upgrade;6
+10/04/2026;Monsters SA;Boo Tracker;BOO-183, child return system;2
+13/04/2026;Monsters SA;Wasowski;SCARE-184, door station upgrade;8
+14/04/2026;Pixar Inc;Ratatouille;RAT-185, recipe API;8
+15/04/2026;Monsters SA;Wasowski;SCARE-186, door calibration;5
+15/04/2026;Disney Parks;Space Mountain;SPACE-187, queue estimator;3
+16/04/2026;Monsters SA;admin;sprint planning;6
+16/04/2026;Monsters SA;Boo Tracker;BOO-189, laugh energy research;2
+17/04/2026;Monsters SA;Boo Tracker;BOO-190, portal detector;4
+17/04/2026;Monsters SA;admin;retrospective;4
+20/04/2026;Disney Parks;Space Mountain;SPACE-192, lighting controller;8
+22/04/2026;Monsters SA;Wasowski;SCARE-193, door calibration;6
+22/04/2026;Pixar Inc;Ratatouille;RAT-194, chef dashboard;2
+23/04/2026;Monsters SA;Wasowski;SCARE-195, door calibration;6
+23/04/2026;Pixar Inc;Ratatouille;RAT-196, ingredient parser;2
+24/04/2026;Pixar Inc;Ratatouille;RAT-197, kitchen integration;8
+27/04/2026;Monsters SA;Wasowski;SCARE-198, energy converter;5
+27/04/2026;Pixar Inc;Ratatouille;RAT-199, recipe API;3
+28/04/2026;Monsters SA;Wasowski;SCARE-200, door station upgrade;8
+29/04/2026;Monsters SA;Wasowski;SCARE-201, code review;5
+29/04/2026;Pixar Inc;Ratatouille;RAT-202, recipe API;3
+30/04/2026;Monsters SA;Boo Tracker;BOO-203, safety audit;8
+04/05/2026;Monsters SA;Boo Tracker;BOO-204, portal detector;8
+05/05/2026;Disney Parks;Space Mountain;SPACE-205, safety sensor API;8
+06/05/2026;Monsters SA;Boo Tracker;BOO-206, containment protocol;8
+07/05/2026;Monsters SA;Boo Tracker;BOO-207, child return system;8
+08/05/2026;Disney Parks;Space Mountain;SPACE-208, ride telemetry;8
+11/05/2026;Pixar Inc;Ratatouille;RAT-209, recipe API;5
+11/05/2026;Monsters SA;Wasowski;SCARE-210, code review;3
+12/05/2026;Monsters SA;Wasowski;SCARE-211, scream canister refactor;8
+13/05/2026;Monsters SA;Wasowski;SCARE-212, scream canister refactor;8
+14/05/2026;Monsters SA;Wasowski;SCARE-213, door station upgrade;8
+15/05/2026;Disney Parks;Space Mountain;SPACE-214, safety sensor API;8
+18/05/2026;Pixar Inc;Toy Story Ops;TOY-215, hamm billing module;8
+19/05/2026;Monsters SA;Boo Tracker;BOO-216, laugh energy research;5
+19/05/2026;Monsters SA;Wasowski;SCARE-217, laugh floor dashboard;3
+20/05/2026;Disney Parks;Space Mountain;SPACE-218, queue estimator;4
+20/05/2026;Monsters SA;Wasowski;SCARE-219, laugh floor dashboard;4
+21/05/2026;Disney Parks;Space Mountain;SPACE-220, safety sensor API;8
+22/05/2026;Pixar Inc;Toy Story Ops;TOY-221, slinky load balancer;8
+25/05/2026;Monsters SA;Wasowski;SCARE-222, energy converter;8
+26/05/2026;Monsters SA;Boo Tracker;BOO-223, portal detector;5
+26/05/2026;Monsters SA;Wasowski;SCARE-224, door calibration;3
+27/05/2026;Monsters SA;Wasowski;SCARE-225, scare simulator fix;8
+28/05/2026;Monsters SA;Wasowski;SCARE-226, scare simulator fix;8
+29/05/2026;Disney Parks;Space Mountain;SPACE-227, lighting controller;8
+01/06/2026;Monsters SA;Wasowski;SCARE-228, door calibration;8
+02/06/2026;Pixar Inc;Toy Story Ops;TOY-229, woody monitoring;8
+03/06/2026;Monsters SA;Boo Tracker;BOO-230, safety audit;8
+05/06/2026;Monsters SA;admin;sprint planning;8
+08/06/2026;Monsters SA;Wasowski;SCARE-232, laugh floor dashboard;6
+08/06/2026;Pixar Inc;Toy Story Ops;TOY-233, woody monitoring;2
+09/06/2026;Monsters SA;Boo Tracker;BOO-234, safety audit;8
+10/06/2026;Monsters SA;Boo Tracker;BOO-235, safety audit;8
+11/06/2026;Monsters SA;Wasowski;SCARE-236, energy converter;8
+12/06/2026;Monsters SA;Boo Tracker;BOO-237, laugh energy research;4
+12/06/2026;Monsters SA;Wasowski;SCARE-238, scare simulator fix;4
+15/06/2026;Monsters SA;Boo Tracker;BOO-239, containment protocol;8
+16/06/2026;Pixar Inc;Toy Story Ops;TOY-240, buzz deployment pipeline;8
+17/06/2026;Monsters SA;Wasowski;SCARE-241, energy converter;8
+18/06/2026;Monsters SA;Wasowski;SCARE-242, energy converter;8
+19/06/2026;Monsters SA;Boo Tracker;BOO-243, portal detector;8
+22/06/2026;Monsters SA;Wasowski;SCARE-244, scream canister refactor;8
+23/06/2026;Monsters SA;Boo Tracker;BOO-245, portal detector;4
+23/06/2026;Monsters SA;Wasowski;SCARE-246, energy converter;4
+24/06/2026;Pixar Inc;Toy Story Ops;TOY-247, hamm billing module;8
+25/06/2026;Pixar Inc;Ratatouille;RAT-248, menu generator;8
+26/06/2026;Monsters SA;Wasowski;SCARE-249, laugh floor dashboard;8
+29/06/2026;Monsters SA;Wasowski;SCARE-250, door calibration;6
+29/06/2026;Pixar Inc;Ratatouille;RAT-251, ingredient parser;2
+30/06/2026;Monsters SA;Boo Tracker;BOO-252, child return system;8
+01/07/2026;Pixar Inc;Ratatouille;RAT-253, recipe API;8
+02/07/2026;Pixar Inc;Ratatouille;RAT-254, kitchen integration;8
+03/07/2026;Disney Parks;Space Mountain;SPACE-255, lighting controller;8
+06/07/2026;Pixar Inc;Toy Story Ops;TOY-256, woody monitoring;5
+06/07/2026;Monsters SA;Boo Tracker;BOO-257, child return system;3
+07/07/2026;Monsters SA;Boo Tracker;BOO-258, safety audit;5
+07/07/2026;Pixar Inc;Toy Story Ops;TOY-259, buzz deployment pipeline;3
+08/07/2026;Monsters SA;Boo Tracker;BOO-260, safety audit;8
+10/07/2026;Monsters SA;Boo Tracker;BOO-261, portal detector;8
+13/07/2026;Monsters SA;Boo Tracker;BOO-262, safety audit;8
+14/07/2026;Pixar Inc;Toy Story Ops;TOY-263, rex error handler;6
+14/07/2026;Disney Parks;Space Mountain;SPACE-264, queue estimator;2
+15/07/2026;Monsters SA;Boo Tracker;BOO-265, child return system;8
+16/07/2026;Monsters SA;Wasowski;SCARE-266, laugh floor dashboard;8
+17/07/2026;Monsters SA;admin;1:1 meeting;8
+20/07/2026;Monsters SA;Boo Tracker;BOO-268, child return system;8
+21/07/2026;Pixar Inc;Toy Story Ops;TOY-269, woody monitoring;8
+22/07/2026;Disney Parks;Space Mountain;SPACE-270, queue estimator;8
+23/07/2026;Monsters SA;Boo Tracker;BOO-271, safety audit;8
+24/07/2026;Pixar Inc;Ratatouille;RAT-272, menu generator;8
+27/07/2026;Pixar Inc;Toy Story Ops;TOY-273, slinky load balancer;4
+27/07/2026;Monsters SA;Wasowski;SCARE-274, energy converter;4
+28/07/2026;Monsters SA;Wasowski;SCARE-275, scream canister refactor;4
+28/07/2026;Monsters SA;admin;1:1 meeting;4
+29/07/2026;Monsters SA;Wasowski;SCARE-277, door station upgrade;8
+30/07/2026;Pixar Inc;Toy Story Ops;TOY-278, hamm billing module;8
+31/07/2026;Monsters SA;Boo Tracker;BOO-279, child return system;5
+31/07/2026;Monsters SA;Wasowski;SCARE-280, scream canister refactor;3

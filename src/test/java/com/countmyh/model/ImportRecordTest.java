@@ -13,10 +13,10 @@ class ImportRecordTest {
         var now = LocalDateTime.of(2026, 6, 18, 10, 0);
         var record = new ImportRecord("hours.csv", "/path/hours.csv", now, 15);
 
-        assertEquals("hours.csv", record.getFileName());
-        assertEquals("/path/hours.csv", record.getFilePath());
-        assertEquals(now, record.getImportDate());
-        assertEquals(15, record.getEntriesImported());
+        assertEquals("hours.csv", record.fileName());
+        assertEquals("/path/hours.csv", record.filePath());
+        assertEquals(now, record.importDate());
+        assertEquals(15, record.entriesImported());
     }
 
     @Test
@@ -34,14 +34,6 @@ class ImportRecordTest {
         var a = new ImportRecord("f.csv", "/a/f.csv", now, 10);
         var b = new ImportRecord("f.csv", "/b/f.csv", now, 10);
         assertNotEquals(a, b);
-    }
-
-    @Test
-    void defaultConstructorShouldWork() {
-        var record = new ImportRecord();
-        assertNull(record.getFileName());
-        assertNull(record.getFilePath());
-        assertEquals(0, record.getEntriesImported());
     }
 
     @Test

@@ -13,12 +13,13 @@ No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `
 
 ## Model Classes
 
-- `WorkHourItem` — One row from CSV: date (LocalDate), client, project, item, hours, sourceFile
-- `WorkHourSelling` — Year-level record: year, hoursSold, vacationDaysSold, note
-- `ImportRecord` — Tracks each import: fileName, filePath, importDate, entriesImported
-- `WorkPeriodTracker` — Root container: List of entries + sellings + importHistory + metadata
+- `WorkHourItem` — Java record. One row from CSV: date (LocalDate), client, project, item, hours, sourceFile. Convenience constructor without sourceFile. `withSourceFile()` for immutable copy. equals/hashCode excludes sourceFile.
+- `WorkHourSelling` — Java record: year, hoursSold, vacationDaysSold, note. Derived `vacationHoursSold()`.
+- `ImportRecord` — Java record: fileName, filePath, importDate, entriesImported. equals/hashCode on filePath + importDate only.
+- `WorkPeriodTracker` — Mutable class (not a record): List of entries + sellings + importHistory + metadata
 
 All monthly/yearly aggregations are computed by `CalculationService`, not stored.
+Record accessors use component-name style (`item.date()`, `item.project()`) not getter style (`getDate()`).
 
 ## CSV Format
 
@@ -34,6 +35,7 @@ Data;Cliente;Projeto;Item;Hs
 - `CsvImportService` — Parses CSV (`;` delimiter) and XLSX with the same column structure.
 - `LegacyXlsxImportService` — Parses the old monthly-aggregated spreadsheet (2017-2025). Converts to `WorkHourItem` entries dated to 1st of month with item="legacy-import", client="Opus".
 - `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename.
+- On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.
 - `CalculationService` — Monthly/yearly aggregation, extra hours (worked - expected), proportional sold-hours attribution across projects, project summaries.
 
 ## Data Entry Features

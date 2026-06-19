@@ -133,16 +133,16 @@ public class DataEntryView {
         importHistoryTable.setPlaceholder(new Label("No files imported yet"));
 
         var colFile = new TableColumn<ImportRecord, String>("File");
-        colFile.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getFileName()));
+        colFile.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().fileName()));
 
         var colDate = new TableColumn<ImportRecord, String>("Imported At");
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
-                cd.getValue().getImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                cd.getValue().importDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
         ));
         colDate.setPrefWidth(140);
 
         var colEntries = new TableColumn<ImportRecord, Number>("Entries");
-        colEntries.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().getEntriesImported()));
+        colEntries.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().entriesImported()));
         colEntries.setPrefWidth(70);
 
         var colActions = new TableColumn<ImportRecord, Void>("Actions");
@@ -193,19 +193,19 @@ public class DataEntryView {
 
     private void handleExportImportRecord(ImportRecord record) {
         var entries = data.getEntries().stream()
-                .filter(e -> record.getFilePath().equals(e.getSourceFile()))
-                .sorted(Comparator.comparing(WorkHourItem::getDate))
+                .filter(e -> record.filePath().equals(e.sourceFile()))
+                .sorted(Comparator.comparing(WorkHourItem::date))
                 .toList();
 
         if (entries.isEmpty()) {
             statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("No entries found for " + record.getFileName());
+            statusLabel.setText("No entries found for " + record.fileName());
             return;
         }
 
         var fileChooser = new FileChooser();
-        fileChooser.setTitle("Export entries from " + record.getFileName());
-        fileChooser.setInitialFileName(record.getFileName());
+        fileChooser.setTitle("Export entries from " + record.fileName());
+        fileChooser.setInitialFileName(record.fileName());
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files", "*.csv"));
 
         File file = fileChooser.showSaveDialog(content.getScene().getWindow());
@@ -223,18 +223,18 @@ public class DataEntryView {
 
     private void handleDeleteImportRecord(ImportRecord record) {
         long count = data.getEntries().stream()
-                .filter(e -> record.getFilePath().equals(e.getSourceFile()))
+                .filter(e -> record.filePath().equals(e.sourceFile()))
                 .count();
 
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Import");
-        alert.setHeaderText("Delete \"" + record.getFileName() + "\"?");
+        alert.setHeaderText("Delete \"" + record.fileName() + "\"?");
         alert.setContentText("This will permanently remove " + count + " entries that were imported from this file.");
 
         var result = alert.showAndWait();
         if (result.isEmpty() || result.get() != ButtonType.OK) return;
 
-        int removed = data.removeEntriesBySource(record.getFilePath());
+        int removed = data.removeEntriesBySource(record.filePath());
         data.removeImportRecord(record);
 
         try {
@@ -246,7 +246,7 @@ public class DataEntryView {
         }
 
         statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-        statusLabel.setText("Deleted " + removed + " entries from " + record.getFileName());
+        statusLabel.setText("Deleted " + removed + " entries from " + record.fileName());
 
         refreshImportHistory();
         refreshFilters();
@@ -258,11 +258,11 @@ public class DataEntryView {
         try (var writer = new FileWriter(file)) {
             writer.write(CSV_HEADER + "\n");
             for (var entry : items) {
-                writer.write(entry.getDate().format(DATE_FMT)
-                        + ";" + entry.getClient()
-                        + ";" + entry.getProject()
-                        + ";" + entry.getItem()
-                        + ";" + (entry.getHours() % 1 == 0 ? String.valueOf((int) entry.getHours()) : String.valueOf(entry.getHours()))
+                writer.write(entry.date().format(DATE_FMT)
+                        + ";" + entry.client()
+                        + ";" + entry.project()
+                        + ";" + entry.item()
+                        + ";" + (entry.hours() % 1 == 0 ? String.valueOf((int) entry.hours()) : String.valueOf(entry.hours()))
                         + "\n");
             }
         }
@@ -272,7 +272,7 @@ public class DataEntryView {
         filterYear = new ComboBox<>();
         filterYear.getItems().add("All years");
         data.getEntries().stream()
-                .map(e -> String.valueOf(e.getYear()))
+                .map(e -> String.valueOf(e.year()))
                 .distinct()
                 .sorted()
                 .forEach(y -> filterYear.getItems().add(y));
@@ -282,7 +282,7 @@ public class DataEntryView {
         filterProject = new ComboBox<>();
         filterProject.getItems().add("All projects");
         data.getEntries().stream()
-                .map(WorkHourItem::getProject)
+                .map(WorkHourItem::project)
                 .distinct()
                 .sorted()
                 .forEach(p -> filterProject.getItems().add(p));
@@ -304,23 +304,23 @@ public class DataEntryView {
 
         var colDate = new TableColumn<WorkHourItem, String>("Date");
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
-                cd.getValue().getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                cd.getValue().date().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         ));
         colDate.setPrefWidth(100);
 
         var colClient = new TableColumn<WorkHourItem, String>("Client");
-        colClient.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getClient()));
+        colClient.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().client()));
         colClient.setPrefWidth(100);
 
         var colProject = new TableColumn<WorkHourItem, String>("Project");
-        colProject.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getProject()));
+        colProject.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().project()));
         colProject.setPrefWidth(140);
 
         var colItem = new TableColumn<WorkHourItem, String>("Item");
-        colItem.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getItem()));
+        colItem.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().item()));
 
         var colHours = new TableColumn<WorkHourItem, Number>("Hours");
-        colHours.setCellValueFactory(cd -> new SimpleDoubleProperty(cd.getValue().getHours()));
+        colHours.setCellValueFactory(cd -> new SimpleDoubleProperty(cd.getValue().hours()));
         colHours.setPrefWidth(70);
 
         table.getColumns().addAll(colDate, colClient, colProject, colItem, colHours);
@@ -336,9 +336,9 @@ public class DataEntryView {
         String projectFilter = filterProject.getValue();
 
         List<WorkHourItem> filtered = data.getEntries().stream()
-                .filter(e -> "All years".equals(yearFilter) || String.valueOf(e.getYear()).equals(yearFilter))
-                .filter(e -> "All projects".equals(projectFilter) || e.getProject().equals(projectFilter))
-                .sorted(Comparator.comparing(WorkHourItem::getDate).reversed())
+                .filter(e -> "All years".equals(yearFilter) || String.valueOf(e.year()).equals(yearFilter))
+                .filter(e -> "All projects".equals(projectFilter) || e.project().equals(projectFilter))
+                .sorted(Comparator.comparing(WorkHourItem::date).reversed())
                 .collect(Collectors.toList());
 
         table.getItems().setAll(filtered);
@@ -372,7 +372,7 @@ public class DataEntryView {
         filterYear.getItems().clear();
         filterYear.getItems().add("All years");
         data.getEntries().stream()
-                .map(e -> String.valueOf(e.getYear()))
+                .map(e -> String.valueOf(e.year()))
                 .distinct().sorted()
                 .forEach(y -> filterYear.getItems().add(y));
         filterYear.setValue(filterYear.getItems().contains(currentYear) ? currentYear : "All years");
@@ -380,7 +380,7 @@ public class DataEntryView {
         filterProject.getItems().clear();
         filterProject.getItems().add("All projects");
         data.getEntries().stream()
-                .map(WorkHourItem::getProject)
+                .map(WorkHourItem::project)
                 .distinct().sorted()
                 .forEach(p -> filterProject.getItems().add(p));
         filterProject.setValue(filterProject.getItems().contains(currentProject) ? currentProject : "All projects");
@@ -429,7 +429,7 @@ public class DataEntryView {
 
         try {
             var sorted = data.getEntries().stream()
-                    .sorted(Comparator.comparing(WorkHourItem::getDate))
+                    .sorted(Comparator.comparing(WorkHourItem::date))
                     .toList();
             writeItemsToCsv(file, sorted);
             lastOpenedSpreadsheet = file;
@@ -455,9 +455,9 @@ public class DataEntryView {
 
     private void importFromFile(File file) {
         try {
-            var items = csvImportService.importFile(file);
+            var rawItems = csvImportService.importFile(file);
             String sourcePath = file.getAbsolutePath();
-            items.forEach(item -> item.setSourceFile(sourcePath));
+            var items = rawItems.stream().map(i -> i.withSourceFile(sourcePath)).toList();
 
             int added = data.addEntriesWithDedup(items);
             data.setLastImportDate(LocalDateTime.now());

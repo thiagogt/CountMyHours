@@ -5,81 +5,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class WorkHourItem {
-
-    private LocalDate date;
-    private String client;
-    private String project;
-    private String item;
-    private double hours;
-    private String sourceFile;
-
-    public WorkHourItem() {
-    }
+public record WorkHourItem(LocalDate date, String client, String project, String item, double hours, String sourceFile) {
 
     public WorkHourItem(LocalDate date, String client, String project, String item, double hours) {
-        this.date = date;
-        this.client = client;
-        this.project = project;
-        this.item = item;
-        this.hours = hours;
+        this(date, client, project, item, hours, null);
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
-    }
-
-    public String getProject() {
-        return project;
-    }
-
-    public void setProject(String project) {
-        this.project = project;
-    }
-
-    public String getItem() {
-        return item;
-    }
-
-    public void setItem(String item) {
-        this.item = item;
-    }
-
-    public double getHours() {
-        return hours;
-    }
-
-    public void setHours(double hours) {
-        this.hours = hours;
-    }
-
-    public String getSourceFile() {
-        return sourceFile;
-    }
-
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
+    public WorkHourItem withSourceFile(String sourceFile) {
+        return new WorkHourItem(date, client, project, item, hours, sourceFile);
     }
 
     @JsonIgnore
-    public int getYear() {
+    public int year() {
         return date.getYear();
     }
 
     @JsonIgnore
-    public int getMonth() {
+    public int month() {
         return date.getMonthValue();
     }
 

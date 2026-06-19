@@ -83,7 +83,7 @@ public class WorkPeriodTracker {
 
     public int removeEntriesBySource(String sourceFilePath) {
         int before = entries.size();
-        entries.removeIf(e -> sourceFilePath.equals(e.getSourceFile()));
+        entries.removeIf(e -> sourceFilePath.equals(e.sourceFile()));
         return before - entries.size();
     }
 
