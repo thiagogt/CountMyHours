@@ -5,6 +5,7 @@ import com.countmyh.service.BusinessDayService;
 import com.countmyh.service.CalculationService;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.I18n;
 import com.countmyh.view.MainView;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
@@ -12,31 +13,43 @@ import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import com.countmyh.util.I18n;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class App extends Application {
 
     private static final double MIN_SPLASH_SECONDS = 4.0;
+    private StackPane rootStack;
+    private Stage primaryStage;
+
+    private WorkPeriodTracker loadedData;
+    private CalculationService calcService;
+    private JsonPersistenceService persistenceService;
+    private CsvImportService csvImportService;
 
     @Override
     public void start(Stage primaryStage) {
-        var rootStack = new StackPane();
+        this.primaryStage = primaryStage;
+        rootStack = new StackPane();
         var scene = new Scene(rootStack, 1280, 860);
         var style = getClass().getResource("dark-theme.css");
         if (style != null)
@@ -58,10 +71,10 @@ public class App extends Application {
         long startTime = System.currentTimeMillis();
 
         new Thread(() -> {
-            var persistenceService = new JsonPersistenceService();
+            persistenceService = new JsonPersistenceService();
             var businessDayService = new BusinessDayService();
-            var calcService = new CalculationService(businessDayService);
-            var csvImportService = new CsvImportService();
+            calcService = new CalculationService(businessDayService);
+            csvImportService = new CsvImportService();
 
             WorkPeriodTracker data;
             try {
@@ -74,24 +87,110 @@ public class App extends Application {
                 loadSampleData(data, csvImportService, persistenceService);
             }
 
-            final var loadedData = data;
+            loadedData = data;
             Platform.runLater(() -> {
-                var mainView = new MainView(loadedData, calcService, persistenceService, csvImportService);
-                rootStack.getChildren().addFirst(mainView.getRoot());
-
                 long elapsed = System.currentTimeMillis() - startTime;
                 double remaining = MIN_SPLASH_SECONDS - (elapsed / 1000.0);
                 var splashPane = splash.root();
 
+                Runnable afterSplash = () -> {
+                    if (I18n.hasSavedLocale()) {
+                        showMainApp();
+                    } else {
+                        showLanguagePicker();
+                    }
+                };
+
                 if (remaining > 0) {
                     var wait = new PauseTransition(Duration.seconds(remaining));
-                    wait.setOnFinished(e -> fadeOutSplash(splashPane, blinkAnim));
+                    wait.setOnFinished(e -> {
+                        fadeOutSplash(splashPane, blinkAnim, afterSplash);
+                    });
                     wait.play();
                 } else {
-                    fadeOutSplash(splashPane, blinkAnim);
+                    fadeOutSplash(splashPane, blinkAnim, afterSplash);
                 }
             });
         }).start();
+    }
+
+    private void showLanguagePicker() {
+        var picker = new VBox(24);
+        picker.setAlignment(Pos.CENTER);
+        picker.setStyle("-fx-background-color: #0f1117;");
+        picker.setPadding(new Insets(40));
+
+        var logoStream = getClass().getResourceAsStream("logo.png");
+        if (logoStream != null) {
+            var logoView = new ImageView(new Image(logoStream));
+            logoView.setFitWidth(90);
+            logoView.setFitHeight(90);
+            logoView.setPreserveRatio(true);
+            picker.getChildren().add(logoView);
+        }
+
+        var welcomeTitle = new Label("Welcome to CountMyHours!");
+        welcomeTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7; -fx-text-alignment: center;");
+        welcomeTitle.setWrapText(true);
+
+        var welcomeMsg = new Label("Thank you for choosing CountMyHours.\nYour personal work hours tracker.");
+        welcomeMsg.setStyle("-fx-font-size: 14px; -fx-text-fill: #8b8d97; -fx-text-alignment: center;");
+        welcomeMsg.setWrapText(true);
+
+        var selectLabel = new Label("Select your language:");
+        selectLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #e4e4e7; -fx-font-weight: bold;");
+
+        var group = new ToggleGroup();
+
+        var btnEn = new ToggleButton("English");
+        btnEn.getStyleClass().add("filter-button");
+        btnEn.setToggleGroup(group);
+        btnEn.setStyle("-fx-font-size: 14px; -fx-padding: 10 28;");
+
+        var btnPt = new ToggleButton("Português (BR)");
+        btnPt.getStyleClass().add("filter-button");
+        btnPt.setToggleGroup(group);
+        btnPt.setStyle("-fx-font-size: 14px; -fx-padding: 10 28;");
+
+        var langButtons = new HBox(16, btnEn, btnPt);
+        langButtons.setAlignment(Pos.CENTER);
+
+        var btnContinue = new Button("Continue");
+        btnContinue.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-size: 15px; "
+                + "-fx-font-weight: bold; -fx-padding: 12 40; -fx-background-radius: 10; -fx-cursor: hand;");
+        btnContinue.setDisable(true);
+
+        group.selectedToggleProperty().addListener((obs, old, sel) -> btnContinue.setDisable(sel == null));
+
+        btnContinue.setOnAction(e -> {
+            Locale locale = btnPt.isSelected() ? Locale.of("pt", "BR") : Locale.ENGLISH;
+            I18n.setLocale(locale);
+            primaryStage.setTitle(I18n.get("app.title"));
+
+            var fadeOut = new FadeTransition(Duration.millis(400), picker);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(ev -> {
+                rootStack.getChildren().remove(picker);
+                showMainApp();
+            });
+            fadeOut.play();
+        });
+
+        picker.getChildren().addAll(welcomeTitle, welcomeMsg, selectLabel, langButtons, btnContinue);
+        rootStack.getChildren().add(picker);
+    }
+
+    private void showMainApp() {
+        var mainView = new MainView(loadedData, calcService, persistenceService, csvImportService);
+        rootStack.getChildren().addFirst(mainView.getRoot());
+
+        var mainNode = mainView.getRoot();
+        mainNode.setOpacity(0);
+        var fadeIn = new FadeTransition(Duration.millis(400), mainNode);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
     }
 
     private record SplashComponents(VBox root, ImageView logoView, Image eyesOpen, Image eyesClosed) {}
@@ -141,12 +240,15 @@ public class App extends Application {
         return timeline;
     }
 
-    private void fadeOutSplash(VBox splash, Timeline blinkAnim) {
+    private void fadeOutSplash(VBox splash, Timeline blinkAnim, Runnable onFinished) {
         blinkAnim.stop();
         var fadeOut = new FadeTransition(Duration.millis(600), splash);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> ((StackPane) splash.getParent()).getChildren().remove(splash));
+        fadeOut.setOnFinished(e -> {
+            ((StackPane) splash.getParent()).getChildren().remove(splash);
+            onFinished.run();
+        });
         fadeOut.play();
     }
 
