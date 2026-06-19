@@ -157,6 +157,19 @@ class CsvImportServiceTest {
     }
 
     @Test
+    void shouldHandleTrailingSemicolons() throws IOException {
+        File csv = createCsvFile("""
+                Data;Cliente;Projeto;Item;Hs;;;;;
+                01/02/2017;Opus;admin;task;4;;;;;
+                """);
+
+        List<WorkHourItem> items = service.importFile(csv);
+
+        assertEquals(1, items.size());
+        assertEquals(4.0, items.getFirst().hours());
+    }
+
+    @Test
     void shouldRejectCommaDelimitedCsv() {
         File csv = createCsvFileUnchecked("""
                 Data,Cliente,Projeto,Item,Hs

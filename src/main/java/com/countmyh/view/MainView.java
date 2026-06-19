@@ -31,6 +31,8 @@ public class MainView {
     private TimelineView timelineView;
     private DataEntryView dataEntryView;
     private ToggleButton btnDashboard;
+    private String currentView = "dashboard";
+    private boolean viewsStale = false;
 
     public MainView(WorkPeriodTracker data, CalculationService calcService,
                     JsonPersistenceService persistenceService, CsvImportService csvImportService) {
@@ -82,6 +84,7 @@ public class MainView {
         root.setLeft(sidebar);
 
         btnDashboard.setSelected(true);
+        viewsStale = true;
         showView("dashboard");
     }
 
@@ -94,6 +97,9 @@ public class MainView {
     }
 
     private void showView(String viewName) {
+        if (viewName.equals(currentView) && !viewsStale) return;
+        currentView = viewName;
+        viewsStale = false;
         contentArea.getChildren().clear();
         Node view = switch (viewName) {
             case "dashboard" -> getDashboardView();
@@ -120,8 +126,7 @@ public class MainView {
     }
 
     public void refreshViews() {
-        btnDashboard.setSelected(true);
-        showView("dashboard");
+        viewsStale = true;
     }
 
     public BorderPane getRoot() {
