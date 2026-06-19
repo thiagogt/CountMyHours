@@ -71,7 +71,7 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23)
 - Bundles JDK runtime + JavaFX + all dependencies (~52MB)
-- Output: `target/installer/CountMyHours-1.0.0.dmg`
+- Output: `target/installer/CountMyHours-2.0.0.dmg`
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions
