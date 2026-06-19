@@ -54,6 +54,7 @@ XLSX files with the same column structure are also supported.
 - Extra hours tracking: gross extras, hours sold, net balance
 - Per-project extra hours breakdown with proportional sold-hours attribution
 - Hour selling records management
+- Splash screen with animated blinking clock logo
 - Sample data auto-loaded on first launch (Disney-themed example entries)
 - Dark theme UI
 - macOS `.dmg` installer (`./package-macos.sh`)
