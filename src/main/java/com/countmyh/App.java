@@ -22,6 +22,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import com.countmyh.util.I18n;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -40,7 +42,7 @@ public class App extends Application {
         if (style != null)
             scene.getStylesheets().add(style.toExternalForm());
 
-        primaryStage.setTitle("CountMyHours");
+        primaryStage.setTitle(I18n.get("app.title"));
         var iconStream = getClass().getResourceAsStream("logo.png");
         if (iconStream != null)
             primaryStage.getIcons().add(new Image(iconStream));
@@ -107,10 +109,10 @@ public class App extends Application {
         logoView.setFitHeight(120);
         logoView.setPreserveRatio(true);
 
-        var title = new Label("CountMyHours");
+        var title = new Label(I18n.get("app.title"));
         title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        var subtitle = new Label("Loading...");
+        var subtitle = new Label(I18n.get("app.loading"));
         subtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #6366f1;");
 
         splash.getChildren().addAll(logoView, title, subtitle);

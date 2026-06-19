@@ -4,6 +4,7 @@ import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CalculationService;
 import com.countmyh.util.ChartStyler;
 import com.countmyh.util.ColorPalette;
+import com.countmyh.util.I18n;
 import com.countmyh.util.MonthNames;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -46,7 +47,7 @@ public class DashboardView {
     }
 
     private void build() {
-        var title = new Label("Dashboard");
+        var title = new Label(I18n.get("dashboard.title"));
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         content.getChildren().addAll(title, buildStatsGrid(), buildChartSection());
@@ -66,13 +67,13 @@ public class DashboardView {
 
         var grid = new FlowPane(16, 16);
         grid.getChildren().addAll(
-                statCard("Total Hours", String.format("%.0f", totalHours), String.format("%.0f working days", totalHours / 8)),
-                statCard("Projects", String.valueOf(projects), "excluding admin"),
-                statCard("Period", period, calcService.getMonthlyTotalWorked(data).size() + " months recorded"),
-                statCard("Monthly Avg", String.format("%.0f", monthlyAvg), "hours/month"),
-                statCard("Gross Extras", formatSigned(grossExtra), "before selling"),
-                statCard("Hours Sold", String.format("%.0fh", sold), "total sold"),
-                statCard("Net Balance", formatSigned(net), "official balance")
+                statCard(I18n.get("dashboard.total.hours"), String.format("%.0f", totalHours), I18n.get("dashboard.working.days", String.format("%.0f", totalHours / 8))),
+                statCard(I18n.get("dashboard.projects"), String.valueOf(projects), I18n.get("dashboard.excluding.admin")),
+                statCard(I18n.get("dashboard.period"), period, I18n.get("dashboard.months.recorded", calcService.getMonthlyTotalWorked(data).size())),
+                statCard(I18n.get("dashboard.monthly.avg"), String.format("%.0f", monthlyAvg), I18n.get("dashboard.hours.month")),
+                statCard(I18n.get("dashboard.gross.extras"), formatSigned(grossExtra), I18n.get("dashboard.before.selling")),
+                statCard(I18n.get("dashboard.hours.sold"), String.format("%.0fh", sold), I18n.get("dashboard.total.sold")),
+                statCard(I18n.get("dashboard.net.balance"), formatSigned(net), I18n.get("dashboard.official.balance"))
         );
         return grid;
     }
@@ -98,7 +99,7 @@ public class DashboardView {
         chartContainer = new VBox(12);
         chartContainer.getStyleClass().add("chart-container");
 
-        var chartTitle = new Label("Monthly Hours by Project");
+        var chartTitle = new Label(I18n.get("dashboard.monthly.hours"));
         chartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         chartContainer.getChildren().addAll(chartTitle, buildFilters());
@@ -112,7 +113,7 @@ public class DashboardView {
         var box = new HBox(8);
         box.setAlignment(Pos.CENTER_LEFT);
 
-        var allBtn = new ToggleButton("All");
+        var allBtn = new ToggleButton(I18n.get("dashboard.all"));
         allBtn.getStyleClass().add("filter-button");
         allBtn.setToggleGroup(group);
         allBtn.setOnAction(e -> buildChart(0, 9999));
@@ -170,7 +171,7 @@ public class DashboardView {
 
         var xAxis = new CategoryAxis();
         var yAxis = new NumberAxis();
-        yAxis.setLabel("Hours");
+        yAxis.setLabel(I18n.get("dashboard.hours.label"));
 
         var chart = new StackedBarChart<String, Number>(xAxis, yAxis);
         chart.setAnimated(false);

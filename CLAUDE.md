@@ -79,4 +79,5 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 - No Spring Boot, no FXML, no module-info.java
 - Programmatic JavaFX UI construction
 - Chart colors applied post-render via `Platform.runLater()` node lookup
+- i18n via `I18n` utility + `ResourceBundle` at `resources/com/countmyh/i18n/messages[_locale].properties` (en default + pt_BR)
 - Every code change must update unit tests, README.md, and CLAUDE.md if affected

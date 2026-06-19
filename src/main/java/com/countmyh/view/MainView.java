@@ -1,10 +1,10 @@
 package com.countmyh.view;
 
 import com.countmyh.model.WorkPeriodTracker;
-import com.countmyh.service.BusinessDayService;
 import com.countmyh.service.CalculationService;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.I18n;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -55,21 +55,21 @@ public class MainView {
         logoView.setFitHeight(40);
         logoView.setPreserveRatio(true);
 
-        var title = new Label("CountMyHours");
+        var title = new Label(I18n.get("app.title"));
         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var logoBox = new HBox(10, logoView, title);
         logoBox.setAlignment(Pos.CENTER_LEFT);
         logoBox.setPadding(new Insets(16, 16, 6, 16));
 
-        var subtitle = new Label("Work Hours Tracker");
+        var subtitle = new Label(I18n.get("app.subtitle"));
         subtitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #8b8d97; -fx-padding: 0 20 20 20;");
 
         var group = new ToggleGroup();
 
-        btnDashboard = createNavButton("Dashboard", group);
-        var btnTimeline = createNavButton("Timeline", group);
-        var btnData = createNavButton("Data", group);
+        btnDashboard = createNavButton(I18n.get("nav.dashboard"), group);
+        var btnTimeline = createNavButton(I18n.get("nav.timeline"), group);
+        var btnData = createNavButton(I18n.get("nav.data"), group);
 
         btnDashboard.setOnAction(e -> showView("dashboard"));
         btnTimeline.setOnAction(e -> showView("timeline"));

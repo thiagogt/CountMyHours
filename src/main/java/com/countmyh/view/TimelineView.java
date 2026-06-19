@@ -3,6 +3,7 @@ package com.countmyh.view;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CalculationService;
 import com.countmyh.util.ColorPalette;
+import com.countmyh.util.I18n;
 import com.countmyh.util.MonthNames;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -47,7 +48,7 @@ public class TimelineView {
     }
 
     private void build() {
-        var title = new Label("Timeline");
+        var title = new Label(I18n.get("timeline.title"));
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         content.getChildren().addAll(title, buildGanttChart(), buildYearlyChart(), buildProjectTable());
@@ -57,12 +58,12 @@ public class TimelineView {
         var container = new VBox(12);
         container.getStyleClass().add("chart-container");
 
-        var chartTitle = new Label("Project's Timeline");
+        var chartTitle = new Label(I18n.get("timeline.projects"));
         chartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var ranges = calcService.getProjectDateRanges(data);
         if (ranges.isEmpty()) {
-            container.getChildren().addAll(chartTitle, new Label("No data"));
+            container.getChildren().addAll(chartTitle, new Label(I18n.get("timeline.no.data")));
             return container;
         }
 
@@ -149,12 +150,12 @@ public class TimelineView {
         var container = new VBox(12);
         container.getStyleClass().add("chart-container");
 
-        var chartTitle = new Label("Yearly Totals");
+        var chartTitle = new Label(I18n.get("timeline.yearly.totals"));
         chartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var xAxis = new CategoryAxis();
         var yAxis = new NumberAxis();
-        yAxis.setLabel("Hours");
+        yAxis.setLabel(I18n.get("dashboard.hours.label"));
 
         var chart = new BarChart<String, Number>(xAxis, yAxis);
         chart.setAnimated(false);
@@ -191,7 +192,7 @@ public class TimelineView {
         var container = new VBox(12);
         container.getStyleClass().add("chart-container");
 
-        var tableTitle = new Label("Project Summary");
+        var tableTitle = new Label(I18n.get("timeline.project.summary"));
         tableTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var summaries = calcService.getProjectSummaries(data);
@@ -200,7 +201,7 @@ public class TimelineView {
         var table = new TableView<CalculationService.ProjectSummary>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
-        var colProject = new TableColumn<CalculationService.ProjectSummary, String>("Project");
+        var colProject = new TableColumn<CalculationService.ProjectSummary, String>(I18n.get("timeline.col.project"));
         colProject.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().project()));
         colProject.setCellFactory(col -> new TableCell<>() {
             @Override
@@ -222,11 +223,11 @@ public class TimelineView {
         });
         colProject.setPrefWidth(180);
 
-        var colClient = new TableColumn<CalculationService.ProjectSummary, String>("Client");
+        var colClient = new TableColumn<CalculationService.ProjectSummary, String>(I18n.get("timeline.col.client"));
         colClient.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().client()));
         colClient.setPrefWidth(100);
 
-        var colPeriod = new TableColumn<CalculationService.ProjectSummary, String>("Period");
+        var colPeriod = new TableColumn<CalculationService.ProjectSummary, String>(I18n.get("timeline.col.period"));
         colPeriod.setCellValueFactory(cd -> {
             var s = cd.getValue();
             String period = MonthNames.label(s.firstMonth().getYear(), s.firstMonth().getMonthValue())
@@ -235,11 +236,11 @@ public class TimelineView {
         });
         colPeriod.setPrefWidth(160);
 
-        var colMonths = new TableColumn<CalculationService.ProjectSummary, Number>("Months");
+        var colMonths = new TableColumn<CalculationService.ProjectSummary, Number>(I18n.get("timeline.col.months"));
         colMonths.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().activeMonths()));
         colMonths.setPrefWidth(70);
 
-        var colHours = new TableColumn<CalculationService.ProjectSummary, Number>("Total Hours");
+        var colHours = new TableColumn<CalculationService.ProjectSummary, Number>(I18n.get("timeline.col.total.hours"));
         colHours.setCellValueFactory(cd -> new SimpleDoubleProperty(cd.getValue().totalHours()));
         colHours.setCellFactory(col -> new TableCell<>() {
             @Override

@@ -5,6 +5,7 @@ import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.I18n;
 import com.countmyh.util.Toast;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -68,7 +69,7 @@ public class DataEntryView {
     }
 
     private void build() {
-        var title = new Label("Data");
+        var title = new Label(I18n.get("data.title"));
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         content.getChildren().addAll(title, buildImportSection(), buildImportHistorySection(), buildFilters(), buildTable());
@@ -82,46 +83,44 @@ public class DataEntryView {
         var container = new VBox(12);
         container.getStyleClass().add("chart-container");
 
-        var sectionTitle = new Label("Import Data");
+        var sectionTitle = new Label(I18n.get("data.import.title"));
         sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        var btnImport = new Button("Import CSV / XLSX");
+        var btnImport = new Button(I18n.get("data.import.csv"));
         btnImport.setOnAction(e -> handleImport());
 
-        var btnNewSheet = new Button("New Spreadsheet");
+        var btnNewSheet = new Button(I18n.get("data.new.spreadsheet"));
         btnNewSheet.setStyle("-fx-background-color: #10b981;");
         btnNewSheet.setOnAction(e -> handleNewSpreadsheet());
 
-        var btnExportEdit = new Button("Export & Edit");
+        var btnExportEdit = new Button(I18n.get("data.export.edit"));
         btnExportEdit.setStyle("-fx-background-color: #f59e0b;");
         btnExportEdit.setOnAction(e -> handleExportAndEdit());
 
-        var btnReimport = new Button("Reimport Last");
+        var btnReimport = new Button(I18n.get("data.reimport.last"));
         btnReimport.setStyle("-fx-background-color: #8b5cf6;");
         btnReimport.setOnAction(e -> handleReimportLast());
 
-        var desc = new Label("New Spreadsheet: creates a template CSV and opens it in your spreadsheet app.  " +
-                "Export & Edit: exports current entries to CSV for editing.  " +
-                "After editing, use Import or Reimport Last.");
+        var desc = new Label(I18n.get("data.import.desc"));
         desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-wrap-text: true;");
         desc.setWrapText(true);
 
         var info = new VBox(4);
         if (data.getLastImportDate() != null) {
-            info.getChildren().add(new Label("Last import: " +
-                    data.getLastImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))));
+            info.getChildren().add(new Label(I18n.get("data.last.import",
+                    data.getLastImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))));
         }
         if (data.getLastSourceFile() != null) {
-            var fileLabel = new Label("Source: " + data.getLastSourceFile());
+            var fileLabel = new Label(I18n.get("data.source", data.getLastSourceFile()));
             fileLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
             info.getChildren().add(fileLabel);
         }
 
-        var totalLabel = new Label("Total entries: " + data.getEntries().size());
+        var totalLabel = new Label(I18n.get("data.total.entries", data.getEntries().size()));
         totalLabel.setStyle("-fx-text-fill: #8b8d97;");
         info.getChildren().add(totalLabel);
 
-        var btnEraseAll = new Button("Erase All Data");
+        var btnEraseAll = new Button(I18n.get("data.erase.all"));
         btnEraseAll.setStyle("-fx-background-color: #ef4444;");
         btnEraseAll.setOnAction(e -> handleEraseAllData());
 
@@ -139,31 +138,31 @@ public class DataEntryView {
         var container = new VBox(12);
         container.getStyleClass().add("chart-container");
 
-        var sectionTitle = new Label("Imported Files");
+        var sectionTitle = new Label(I18n.get("data.imported.files"));
         sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         importHistoryTable = new TableView<>();
         importHistoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        importHistoryTable.setPlaceholder(new Label("No files imported yet"));
+        importHistoryTable.setPlaceholder(new Label(I18n.get("data.no.files.imported")));
 
-        var colFile = new TableColumn<ImportRecord, String>("File");
+        var colFile = new TableColumn<ImportRecord, String>(I18n.get("data.col.file"));
         colFile.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().fileName()));
 
-        var colDate = new TableColumn<ImportRecord, String>("Imported At");
+        var colDate = new TableColumn<ImportRecord, String>(I18n.get("data.col.imported.at"));
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().importDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
         ));
         colDate.setPrefWidth(140);
 
-        var colEntries = new TableColumn<ImportRecord, Number>("Entries");
+        var colEntries = new TableColumn<ImportRecord, Number>(I18n.get("data.col.entries"));
         colEntries.setCellValueFactory(cd -> new SimpleIntegerProperty(cd.getValue().entriesImported()));
         colEntries.setPrefWidth(70);
 
-        var colActions = new TableColumn<ImportRecord, Void>("Actions");
+        var colActions = new TableColumn<ImportRecord, Void>(I18n.get("data.col.actions"));
         colActions.setPrefWidth(180);
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button btnExport = new Button("Export");
-            private final Button btnDelete = new Button("Delete");
+            private final Button btnExport = new Button(I18n.get("data.export"));
+            private final Button btnDelete = new Button(I18n.get("data.delete"));
             private final HBox box = new HBox(8, btnExport, btnDelete);
 
             {
@@ -212,23 +211,23 @@ public class DataEntryView {
                 .toList();
 
         if (entries.isEmpty()) {
-            toast("No entries found for " + record.fileName(), Toast.Type.WARNING);
+            toast(I18n.get("toast.no.entries.for", record.fileName()), Toast.Type.WARNING);
             return;
         }
 
         var fileChooser = new FileChooser();
-        fileChooser.setTitle("Export entries from " + record.fileName());
+        fileChooser.setTitle(I18n.get("data.export.from", record.fileName()));
         fileChooser.setInitialFileName(record.fileName());
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files", "*.csv"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv"));
 
         File file = fileChooser.showSaveDialog(content.getScene().getWindow());
         if (file == null) return;
 
         try {
             writeItemsToCsv(file, entries);
-            toast("Exported " + entries.size() + " entries to " + file.getName(), Toast.Type.SUCCESS);
+            toast(I18n.get("toast.exported", entries.size(), file.getName()), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            toast("Export failed: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.export.failed", ex.getMessage()), Toast.Type.ERROR);
         }
     }
 
@@ -239,9 +238,9 @@ public class DataEntryView {
 
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
         styleAlert(alert);
-        alert.setTitle("Delete Import");
-        alert.setHeaderText("Delete \"" + record.fileName() + "\"?");
-        alert.setContentText("This will permanently remove " + count + " entries that were imported from this file.");
+        alert.setTitle(I18n.get("dialog.delete.title"));
+        alert.setHeaderText(I18n.get("dialog.delete.header", record.fileName()));
+        alert.setContentText(I18n.get("dialog.delete.content", count));
 
         var result = alert.showAndWait();
         if (result.isEmpty() || result.get() != ButtonType.OK) return;
@@ -252,11 +251,11 @@ public class DataEntryView {
         try {
             persistenceService.save(data);
         } catch (IOException ex) {
-            toast("Save failed: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.save.failed", ex.getMessage()), Toast.Type.ERROR);
             return;
         }
 
-        toast("Deleted " + removed + " entries from " + record.fileName(), Toast.Type.SUCCESS);
+        toast(I18n.get("toast.deleted", removed, record.fileName()), Toast.Type.SUCCESS);
 
         refreshImportHistory();
         refreshFilters();
@@ -279,8 +278,11 @@ public class DataEntryView {
     }
 
     private Node buildFilters() {
+        String allYears = I18n.get("data.all.years");
+        String allProjects = I18n.get("data.all.projects");
+
         filterYear = new ComboBox<>();
-        filterYear.getItems().add("All years");
+        filterYear.getItems().add(allYears);
         var years = data.getEntries().stream()
                 .map(e -> String.valueOf(e.year()))
                 .distinct()
@@ -293,23 +295,23 @@ public class DataEntryView {
         } else if (!years.isEmpty()) {
             filterYear.setValue(years.getLast());
         } else {
-            filterYear.setValue("All years");
+            filterYear.setValue(allYears);
         }
         filterYear.setOnAction(e -> applyFilters());
 
         filterProject = new ComboBox<>();
-        filterProject.getItems().add("All projects");
+        filterProject.getItems().add(allProjects);
         data.getEntries().stream()
                 .map(WorkHourItem::project)
                 .distinct()
                 .sorted()
                 .forEach(p -> filterProject.getItems().add(p));
-        filterProject.setValue("All projects");
+        filterProject.setValue(allProjects);
         filterProject.setOnAction(e -> applyFilters());
 
         var box = new HBox(12,
-                new Label("Year:"), filterYear,
-                new Label("Project:"), filterProject
+                new Label(I18n.get("data.filter.year")), filterYear,
+                new Label(I18n.get("data.filter.project")), filterProject
         );
         box.setAlignment(Pos.CENTER_LEFT);
         return box;
@@ -320,24 +322,24 @@ public class DataEntryView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         table.setPrefHeight(500);
 
-        var colDate = new TableColumn<WorkHourItem, String>("Date");
+        var colDate = new TableColumn<WorkHourItem, String>(I18n.get("data.col.date"));
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().date().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         ));
         colDate.setPrefWidth(100);
 
-        var colClient = new TableColumn<WorkHourItem, String>("Client");
+        var colClient = new TableColumn<WorkHourItem, String>(I18n.get("data.col.client"));
         colClient.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().client()));
         colClient.setPrefWidth(100);
 
-        var colProject = new TableColumn<WorkHourItem, String>("Project");
+        var colProject = new TableColumn<WorkHourItem, String>(I18n.get("data.col.project"));
         colProject.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().project()));
         colProject.setPrefWidth(140);
 
-        var colItem = new TableColumn<WorkHourItem, String>("Item");
+        var colItem = new TableColumn<WorkHourItem, String>(I18n.get("data.col.item"));
         colItem.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().item()));
 
-        var colHours = new TableColumn<WorkHourItem, Number>("Hours");
+        var colHours = new TableColumn<WorkHourItem, Number>(I18n.get("data.col.hours"));
         colHours.setCellValueFactory(cd -> new SimpleDoubleProperty(cd.getValue().hours()));
         colHours.setPrefWidth(70);
 
@@ -350,12 +352,14 @@ public class DataEntryView {
     private void applyFilters() {
         if (table == null) return;
 
+        String allYears = I18n.get("data.all.years");
+        String allProjects = I18n.get("data.all.projects");
         String yearFilter = filterYear.getValue();
         String projectFilter = filterProject.getValue();
 
         List<WorkHourItem> filtered = data.getEntries().stream()
-                .filter(e -> "All years".equals(yearFilter) || String.valueOf(e.year()).equals(yearFilter))
-                .filter(e -> "All projects".equals(projectFilter) || e.project().equals(projectFilter))
+                .filter(e -> allYears.equals(yearFilter) || String.valueOf(e.year()).equals(yearFilter))
+                .filter(e -> allProjects.equals(projectFilter) || e.project().equals(projectFilter))
                 .sorted(Comparator.comparing(WorkHourItem::date).reversed())
                 .collect(Collectors.toList());
 
@@ -364,11 +368,11 @@ public class DataEntryView {
 
     private void handleImport() {
         var fileChooser = new FileChooser();
-        fileChooser.setTitle("Import work hours");
+        fileChooser.setTitle(I18n.get("data.import.work.hours"));
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV / XLSX", "*.csv", "*.xlsx"),
-                new FileChooser.ExtensionFilter("CSV files", "*.csv"),
-                new FileChooser.ExtensionFilter("Excel files", "*.xlsx")
+                new FileChooser.ExtensionFilter(I18n.get("data.csv.xlsx"), "*.csv", "*.xlsx"),
+                new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv"),
+                new FileChooser.ExtensionFilter(I18n.get("data.excel.files"), "*.xlsx")
         );
 
         File file = fileChooser.showOpenDialog(content.getScene().getWindow());
@@ -378,32 +382,34 @@ public class DataEntryView {
     }
 
     private void refreshFilters() {
+        String allYears = I18n.get("data.all.years");
+        String allProjects = I18n.get("data.all.projects");
         String currentYear = filterYear.getValue();
         String currentProject = filterProject.getValue();
 
         filterYear.getItems().clear();
-        filterYear.getItems().add("All years");
+        filterYear.getItems().add(allYears);
         data.getEntries().stream()
                 .map(e -> String.valueOf(e.year()))
                 .distinct().sorted()
                 .forEach(y -> filterYear.getItems().add(y));
-        filterYear.setValue(filterYear.getItems().contains(currentYear) ? currentYear : "All years");
+        filterYear.setValue(filterYear.getItems().contains(currentYear) ? currentYear : allYears);
 
         filterProject.getItems().clear();
-        filterProject.getItems().add("All projects");
+        filterProject.getItems().add(allProjects);
         data.getEntries().stream()
                 .map(WorkHourItem::project)
                 .distinct().sorted()
                 .forEach(p -> filterProject.getItems().add(p));
-        filterProject.setValue(filterProject.getItems().contains(currentProject) ? currentProject : "All projects");
+        filterProject.setValue(filterProject.getItems().contains(currentProject) ? currentProject : allProjects);
     }
 
     private void handleNewSpreadsheet() {
         var fileChooser = new FileChooser();
-        fileChooser.setTitle("Create new spreadsheet");
+        fileChooser.setTitle(I18n.get("data.create.spreadsheet"));
         fileChooser.setInitialFileName("hours_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM")) + ".csv");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("CSV files", "*.csv")
+                new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv")
         );
 
         File file = fileChooser.showSaveDialog(content.getScene().getWindow());
@@ -413,23 +419,23 @@ public class DataEntryView {
             writeCsvTemplate(file);
             lastOpenedSpreadsheet = file;
             openInSpreadsheetApp(file);
-            toast("Spreadsheet created: " + file.getName(), Toast.Type.SUCCESS);
+            toast(I18n.get("toast.spreadsheet.created", file.getName()), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            toast("Failed to create spreadsheet: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.spreadsheet.failed", ex.getMessage()), Toast.Type.ERROR);
         }
     }
 
     private void handleExportAndEdit() {
         if (data.getEntries().isEmpty()) {
-            toast("No entries to export", Toast.Type.WARNING);
+            toast(I18n.get("toast.no.entries.export"), Toast.Type.WARNING);
             return;
         }
 
         var fileChooser = new FileChooser();
-        fileChooser.setTitle("Export entries to CSV");
+        fileChooser.setTitle(I18n.get("data.export.csv"));
         fileChooser.setInitialFileName("hours_export_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd")) + ".csv");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("CSV files", "*.csv")
+                new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv")
         );
 
         File file = fileChooser.showSaveDialog(content.getScene().getWindow());
@@ -442,15 +448,15 @@ public class DataEntryView {
             writeItemsToCsv(file, sorted);
             lastOpenedSpreadsheet = file;
             openInSpreadsheetApp(file);
-            toast("Exported " + data.getEntries().size() + " entries to " + file.getName(), Toast.Type.SUCCESS);
+            toast(I18n.get("toast.exported", data.getEntries().size(), file.getName()), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            toast("Export failed: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.export.failed", ex.getMessage()), Toast.Type.ERROR);
         }
     }
 
     private void handleReimportLast() {
         if (lastOpenedSpreadsheet == null || !lastOpenedSpreadsheet.exists()) {
-            toast("No spreadsheet to reimport. Use New Spreadsheet or Export & Edit first.", Toast.Type.WARNING);
+            toast(I18n.get("toast.no.spreadsheet"), Toast.Type.WARNING);
             return;
         }
 
@@ -474,28 +480,28 @@ public class DataEntryView {
             }
 
             persistenceService.save(data);
-            toast("Imported " + added + " new entries from " + file.getName() + " (" + items.size() + " in file)", Toast.Type.SUCCESS);
+            toast(I18n.get("toast.imported", added, file.getName(), items.size()), Toast.Type.SUCCESS);
 
             refreshImportHistory();
             refreshFilters();
             applyFilters();
             onDataChanged.run();
         } catch (Exception ex) {
-            toast("Import failed: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.import.failed", ex.getMessage()), Toast.Type.ERROR);
         }
     }
 
     private void handleEraseAllData() {
         if (data.getEntries().isEmpty()) {
-            toast("No data to erase", Toast.Type.WARNING);
+            toast(I18n.get("toast.no.data.erase"), Toast.Type.WARNING);
             return;
         }
 
         var alert = new Alert(Alert.AlertType.WARNING);
         styleAlert(alert);
-        alert.setTitle("Erase All Data");
-        alert.setHeaderText("Are you sure you want to erase all data?");
-        alert.setContentText("This will permanently delete all entries, hour sellings, and import history. This action is irreversible.");
+        alert.setTitle(I18n.get("dialog.erase.title"));
+        alert.setHeaderText(I18n.get("dialog.erase.header"));
+        alert.setContentText(I18n.get("dialog.erase.content"));
         alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
 
         var result = alert.showAndWait();
@@ -507,11 +513,11 @@ public class DataEntryView {
         try {
             persistenceService.save(data);
         } catch (IOException ex) {
-            toast("Save failed: " + ex.getMessage(), Toast.Type.ERROR);
+            toast(I18n.get("toast.save.failed", ex.getMessage()), Toast.Type.ERROR);
             return;
         }
 
-        toast("Erased all data (" + totalEntries + " entries removed)", Toast.Type.SUCCESS);
+        toast(I18n.get("toast.erased", totalEntries), Toast.Type.SUCCESS);
 
         refreshImportHistory();
         refreshFilters();
@@ -535,7 +541,7 @@ public class DataEntryView {
                 new ProcessBuilder("open", file.getAbsolutePath()).start();
             }
         } catch (IOException e) {
-            toast("File created but could not open automatically: " + file.getAbsolutePath(), Toast.Type.WARNING);
+            toast(I18n.get("toast.file.open.failed", file.getAbsolutePath()), Toast.Type.WARNING);
         }
     }
 
