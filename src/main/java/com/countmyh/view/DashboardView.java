@@ -34,6 +34,8 @@ public class DashboardView {
     private final CalculationService calcService;
     private final VBox content;
     private VBox chartContainer;
+    private int initialStartYear;
+    private int initialEndYear;
 
     public DashboardView(WorkPeriodTracker data, CalculationService calcService) {
         this.data = data;
@@ -99,32 +101,58 @@ public class DashboardView {
         var chartTitle = new Label("Monthly Hours by Project");
         chartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        var filters = buildFilters();
-
-        chartContainer.getChildren().addAll(chartTitle, filters);
-        buildChart(0, 9999);
+        chartContainer.getChildren().addAll(chartTitle, buildFilters());
+        buildChart(initialStartYear, initialEndYear);
 
         return chartContainer;
     }
 
     private HBox buildFilters() {
         var group = new ToggleGroup();
-        int[][] ranges = {{0, 9999}, {2017, 2019}, {2020, 2022}, {2023, 2024}, {2025, 2026}};
-        String[] labels = {"All", "2017-2019", "2020-2022", "2023-2024", "2025-2026"};
-
         var box = new HBox(8);
         box.setAlignment(Pos.CENTER_LEFT);
 
-        for (int i = 0; i < labels.length; i++) {
-            var btn = new ToggleButton(labels[i]);
+        var allBtn = new ToggleButton("All");
+        allBtn.getStyleClass().add("filter-button");
+        allBtn.setToggleGroup(group);
+        allBtn.setOnAction(e -> buildChart(0, 9999));
+        box.getChildren().add(allBtn);
+
+        var yearlyTotals = new TreeMap<>(calcService.getYearlyTotals(data));
+        int currentYear = java.time.LocalDate.now().getYear();
+        ToggleButton defaultBtn = allBtn;
+
+        for (int year : yearlyTotals.keySet()) {
+            var btn = new ToggleButton(String.valueOf(year));
             btn.getStyleClass().add("filter-button");
             btn.setToggleGroup(group);
-            int startYear = ranges[i][0];
-            int endYear = ranges[i][1];
-            btn.setOnAction(e -> buildChart(startYear, endYear));
-            if (i == 0) btn.setSelected(true);
+            btn.setOnAction(e -> buildChart(year, year));
             box.getChildren().add(btn);
+            if (year == currentYear) {
+                defaultBtn = btn;
+            }
         }
+
+        if (defaultBtn == allBtn && !yearlyTotals.isEmpty()) {
+            int lastYear = yearlyTotals.lastKey();
+            for (var node : box.getChildren()) {
+                if (node instanceof ToggleButton tb && tb.getText().equals(String.valueOf(lastYear))) {
+                    defaultBtn = tb;
+                    break;
+                }
+            }
+        }
+
+        defaultBtn.setSelected(true);
+        if (defaultBtn != allBtn) {
+            int y = Integer.parseInt(defaultBtn.getText());
+            initialStartYear = y;
+            initialEndYear = y;
+        } else {
+            initialStartYear = 0;
+            initialEndYear = 9999;
+        }
+
         return box;
     }
 

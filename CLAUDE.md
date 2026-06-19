@@ -36,6 +36,7 @@ Data;Cliente;Projeto;Item;Hs
 - `LegacyXlsxImportService` — Parses the old monthly-aggregated spreadsheet (2017-2025). Converts to `WorkHourItem` entries dated to 1st of month with item="legacy-import", client="Opus".
 - `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename.
 - On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.
+- Year filters in Dashboard and Data views are dynamic (derived from actual data years) and default to the current year or the most recent year in the data.
 - `CalculationService` — Monthly/yearly aggregation, extra hours (worked - expected), proportional sold-hours attribution across projects, project summaries.
 
 ## Data Entry Features

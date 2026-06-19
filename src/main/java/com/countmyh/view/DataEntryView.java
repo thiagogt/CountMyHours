@@ -271,12 +271,20 @@ public class DataEntryView {
     private Node buildFilters() {
         filterYear = new ComboBox<>();
         filterYear.getItems().add("All years");
-        data.getEntries().stream()
+        var years = data.getEntries().stream()
                 .map(e -> String.valueOf(e.year()))
                 .distinct()
                 .sorted()
-                .forEach(y -> filterYear.getItems().add(y));
-        filterYear.setValue("All years");
+                .toList();
+        filterYear.getItems().addAll(years);
+        String currentYear = String.valueOf(java.time.LocalDate.now().getYear());
+        if (years.contains(currentYear)) {
+            filterYear.setValue(currentYear);
+        } else if (!years.isEmpty()) {
+            filterYear.setValue(years.getLast());
+        } else {
+            filterYear.setValue("All years");
+        }
         filterYear.setOnAction(e -> applyFilters());
 
         filterProject = new ComboBox<>();
