@@ -30,6 +30,7 @@ public class MainView {
     private DashboardView dashboardView;
     private TimelineView timelineView;
     private DataEntryView dataEntryView;
+    private ToggleButton btnDashboard;
 
     public MainView(WorkPeriodTracker data, CalculationService calcService,
                     JsonPersistenceService persistenceService, CsvImportService csvImportService) {
@@ -64,7 +65,7 @@ public class MainView {
 
         var group = new ToggleGroup();
 
-        var btnDashboard = createNavButton("Dashboard", group);
+        btnDashboard = createNavButton("Dashboard", group);
         var btnTimeline = createNavButton("Timeline", group);
         var btnData = createNavButton("Data", group);
 
@@ -119,6 +120,7 @@ public class MainView {
     }
 
     public void refreshViews() {
+        btnDashboard.setSelected(true);
         showView("dashboard");
     }
 
