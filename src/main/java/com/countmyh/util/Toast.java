@@ -21,21 +21,26 @@ public final class Toast {
     private Toast() {}
 
     public static void show(StackPane container, String message, Type type) {
+        var icon = new Label(icon(type));
+        icon.setStyle(iconStyle(type));
+
         var label = new Label(message);
         label.setWrapText(true);
-        label.setMaxWidth(600);
+        label.setMaxWidth(500);
         label.setStyle(labelStyle(type));
 
-        var toast = new HBox(label);
-        toast.setAlignment(Pos.CENTER);
-        toast.setPadding(new Insets(12, 20, 12, 20));
+        var toast = new HBox(8, icon, label);
+        toast.setAlignment(Pos.CENTER_LEFT);
+        toast.setPadding(new Insets(10, 16, 10, 16));
         toast.setStyle(boxStyle(type));
+        toast.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        toast.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         toast.setMouseTransparent(false);
         toast.setPickOnBounds(false);
         toast.setOpacity(0);
 
-        StackPane.setAlignment(toast, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(toast, new Insets(0, 0, 24, 0));
+        StackPane.setAlignment(toast, Pos.TOP_RIGHT);
+        StackPane.setMargin(toast, new Insets(16, 16, 0, 0));
         container.getChildren().add(toast);
 
         var fadeIn = new FadeTransition(Duration.millis(FADE_IN_MS), toast);
@@ -64,6 +69,25 @@ public final class Toast {
                 + "-fx-border-radius: 10;"
                 + "-fx-background-radius: 10;"
                 + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 12, 0, 0, 4);";
+    }
+
+    private static String icon(Type type) {
+        return switch (type) {
+            case SUCCESS -> "✓";
+            case ERROR -> "✗";
+            case WARNING -> "⚠";
+        };
+    }
+
+    private static String iconStyle(Type type) {
+        String color = switch (type) {
+            case SUCCESS -> "#22c55e";
+            case ERROR -> "#ef4444";
+            case WARNING -> "#f59e0b";
+        };
+        return "-fx-text-fill: " + color + ";"
+                + "-fx-font-size: 18px;"
+                + "-fx-font-weight: bold;";
     }
 
     private static String labelStyle(Type type) {

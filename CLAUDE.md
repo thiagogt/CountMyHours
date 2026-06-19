@@ -48,6 +48,7 @@ Data;Cliente;Projeto;Item;Hs
 - **Import History**: table of all imported files with Export and Delete actions per file
   - Delete removes all entries tagged with that file's sourceFile and persists the change
 - **Erase All Data**: clears all entries, hour sellings, and import history with confirmation dialog. Calls `WorkPeriodTracker.clearAll()`.
+- **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
 - Each imported entry is tagged with `sourceFile` for traceability
 
 ## Build & Run
