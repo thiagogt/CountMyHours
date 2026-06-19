@@ -133,9 +133,13 @@ public class App extends Application {
         welcomeTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7; -fx-text-alignment: center;");
         welcomeTitle.setWrapText(true);
 
-        var welcomeMsg = new Label("Thank you for choosing CountMyHours.\nYour personal work hours tracker.");
+        var welcomeMsg = new Label("Thank you for choosing CountMyHours.\nYour personal work hours tracker, handcrafted with care.");
         welcomeMsg.setStyle("-fx-font-size: 14px; -fx-text-fill: #8b8d97; -fx-text-alignment: center;");
         welcomeMsg.setWrapText(true);
+
+        var thanksMsg = new Label("Thank you for supporting independent software.\n— The CountMyHours Team");
+        thanksMsg.setStyle("-fx-font-size: 13px; -fx-text-fill: #6366f1; -fx-text-alignment: center; -fx-font-style: italic;");
+        thanksMsg.setWrapText(true);
 
         var selectLabel = new Label("Select your language:");
         selectLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #e4e4e7; -fx-font-weight: bold;");
@@ -177,7 +181,7 @@ public class App extends Application {
             fadeOut.play();
         });
 
-        picker.getChildren().addAll(welcomeTitle, welcomeMsg, selectLabel, langButtons, btnContinue);
+        picker.getChildren().addAll(welcomeTitle, welcomeMsg, thanksMsg, selectLabel, langButtons, btnContinue);
         rootStack.getChildren().add(picker);
     }
 

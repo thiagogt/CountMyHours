@@ -29,6 +29,7 @@ public class MainView {
 
     private DashboardView dashboardView;
     private TimelineView timelineView;
+    private ExtraHoursView extraHoursView;
     private DataEntryView dataEntryView;
     private ToggleButton btnDashboard;
     private String currentView = "dashboard";
@@ -69,13 +70,15 @@ public class MainView {
 
         btnDashboard = createNavButton(I18n.get("nav.dashboard"), group);
         var btnTimeline = createNavButton(I18n.get("nav.timeline"), group);
+        var btnExtra = createNavButton(I18n.get("nav.extra"), group);
         var btnData = createNavButton(I18n.get("nav.data"), group);
 
         btnDashboard.setOnAction(e -> showView("dashboard"));
         btnTimeline.setOnAction(e -> showView("timeline"));
+        btnExtra.setOnAction(e -> showView("extra"));
         btnData.setOnAction(e -> showView("data"));
 
-        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnData);
+        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnData);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
         sidebar.setMinWidth(200);
@@ -104,6 +107,7 @@ public class MainView {
         Node view = switch (viewName) {
             case "dashboard" -> getDashboardView();
             case "timeline" -> getTimelineView();
+            case "extra" -> getExtraHoursView();
             case "data" -> getDataEntryView();
             default -> new Label("Unknown view");
         };
@@ -118,6 +122,11 @@ public class MainView {
     private Node getTimelineView() {
         timelineView = new TimelineView(data, calcService);
         return timelineView.getRoot();
+    }
+
+    private Node getExtraHoursView() {
+        extraHoursView = new ExtraHoursView(data, calcService);
+        return extraHoursView.getRoot();
     }
 
     private Node getDataEntryView() {
