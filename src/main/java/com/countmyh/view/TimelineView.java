@@ -19,12 +19,17 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
+import java.time.YearMonth;
+import java.util.Comparator;
 import java.util.Map;
 
 public class TimelineView {
@@ -45,7 +50,99 @@ public class TimelineView {
         var title = new Label("Timeline");
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        content.getChildren().addAll(title, buildYearlyChart(), buildProjectTable());
+        content.getChildren().addAll(title, buildGanttChart(), buildYearlyChart(), buildProjectTable());
+    }
+
+    private Node buildGanttChart() {
+        var container = new VBox(12);
+        container.getStyleClass().add("chart-container");
+
+        var chartTitle = new Label("Project's Timeline");
+        chartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
+
+        var ranges = calcService.getProjectDateRanges(data);
+        if (ranges.isEmpty()) {
+            container.getChildren().addAll(chartTitle, new Label("No data"));
+            return container;
+        }
+
+        var summaries = calcService.getProjectSummaries(data).stream()
+                .filter(s -> !s.project().equalsIgnoreCase("admin"))
+                .sorted(Comparator.comparing(CalculationService.ProjectSummary::firstMonth))
+                .toList();
+
+        YearMonth globalMin = summaries.stream().map(CalculationService.ProjectSummary::firstMonth).min(Comparator.naturalOrder()).orElse(YearMonth.now());
+        YearMonth globalMax = summaries.stream().map(CalculationService.ProjectSummary::lastMonth).max(Comparator.naturalOrder()).orElse(YearMonth.now());
+        int totalMonths = (globalMax.getYear() - globalMin.getYear()) * 12 + globalMax.getMonthValue() - globalMin.getMonthValue() + 1;
+
+        var grid = new GridPane();
+        grid.setHgap(0);
+        grid.setVgap(6);
+
+        var nameCol = new javafx.scene.layout.ColumnConstraints();
+        nameCol.setMinWidth(130);
+        nameCol.setMaxWidth(130);
+        grid.getColumnConstraints().add(nameCol);
+        for (int i = 0; i < totalMonths; i++) {
+            var col = new javafx.scene.layout.ColumnConstraints();
+            col.setHgrow(Priority.ALWAYS);
+            grid.getColumnConstraints().add(col);
+        }
+
+        int firstYear = globalMin.getYear();
+        int lastYear = globalMax.getYear();
+        for (int y = firstYear; y <= lastYear; y++) {
+            int startMonth = (y == firstYear) ? globalMin.getMonthValue() : 1;
+            int endMonth = (y == lastYear) ? globalMax.getMonthValue() : 12;
+            int span = endMonth - startMonth + 1;
+            int gridCol = (YearMonth.of(y, startMonth).getYear() - globalMin.getYear()) * 12
+                    + startMonth - globalMin.getMonthValue();
+
+            var yearLabel = new Label(String.valueOf(y));
+            yearLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 10px; -fx-font-weight: bold;");
+            yearLabel.setAlignment(Pos.CENTER);
+            yearLabel.setMaxWidth(Double.MAX_VALUE);
+            GridPane.setColumnSpan(yearLabel, span);
+            grid.add(yearLabel, 1 + gridCol, 0);
+        }
+
+        int barRow = 1;
+        for (var summary : summaries) {
+            String project = summary.project();
+            String color = ColorPalette.getColor(project);
+
+            var dot = new Rectangle(8, 8);
+            dot.setStyle("-fx-fill: " + color + "; -fx-arc-width: 8; -fx-arc-height: 8;");
+            var nameLabel = new Label(project);
+            nameLabel.setStyle("-fx-text-fill: #e4e4e7; -fx-font-size: 12px;");
+            var nameBox = new HBox(6, dot, nameLabel);
+            nameBox.setAlignment(Pos.CENTER_LEFT);
+            grid.add(nameBox, 0, barRow);
+
+            int startOffset = (summary.firstMonth().getYear() - globalMin.getYear()) * 12
+                    + summary.firstMonth().getMonthValue() - globalMin.getMonthValue();
+            int duration = (summary.lastMonth().getYear() - summary.firstMonth().getYear()) * 12
+                    + summary.lastMonth().getMonthValue() - summary.firstMonth().getMonthValue() + 1;
+
+            var bar = new Pane();
+            bar.setMinHeight(22);
+            bar.setMaxHeight(22);
+            bar.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 6; -fx-opacity: 0.85;");
+
+            String tip = MonthNames.label(summary.firstMonth().getYear(), summary.firstMonth().getMonthValue())
+                    + " - " + MonthNames.label(summary.lastMonth().getYear(), summary.lastMonth().getMonthValue())
+                    + " | " + String.format("%.0fh", summary.totalHours());
+            Tooltip.install(bar, new Tooltip(tip));
+
+            GridPane.setColumnSpan(bar, Math.max(duration, 1));
+            grid.add(bar, 1 + startOffset, barRow);
+
+            barRow++;
+        }
+
+        grid.setPadding(new Insets(8, 0, 8, 0));
+        container.getChildren().addAll(chartTitle, grid);
+        return container;
     }
 
     private Node buildYearlyChart() {
