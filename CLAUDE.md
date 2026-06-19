@@ -32,7 +32,7 @@ Data;Cliente;Projeto;Item;Hs
 ## Key Services
 
 - `BusinessDayService` — Brazilian national holidays (fixed + Easter-based moveable) + São Paulo state holiday (Jul 9). Calculates working days per month, expected hours = business days × 8.
-- `CsvImportService` — Parses CSV (`;` delimiter) and XLSX with the same column structure.
+- `CsvImportService` — Parses CSV (`;` delimiter only, validates format on import) and XLSX with the same column structure.
 - `LegacyXlsxImportService` — Parses the old monthly-aggregated spreadsheet (2017-2025). Converts to `WorkHourItem` entries dated to 1st of month with item="legacy-import", client="Opus".
 - `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename.
 - On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.

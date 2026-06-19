@@ -79,7 +79,8 @@ public class TimelineView {
             for (var d : series.getData()) {
                 if (d.getNode() != null) {
                     int hue = 240 + (i * 15);
-                    d.getNode().setStyle("-fx-bar-fill: hsl(" + hue + ", 70%, 60%); -fx-background-radius: 4 4 0 0;");
+                    String hex = hslToHex(hue, 0.7, 0.6);
+                    d.getNode().setStyle("-fx-bar-fill: " + hex + "; -fx-background-radius: 4 4 0 0;");
                 }
                 i++;
             }
@@ -176,6 +177,23 @@ public class TimelineView {
 
         container.getChildren().addAll(tableTitle, table);
         return container;
+    }
+
+    private static String hslToHex(int h, double s, double l) {
+        double c = (1 - Math.abs(2 * l - 1)) * s;
+        double x = c * (1 - Math.abs((h / 60.0) % 2 - 1));
+        double m = l - c / 2;
+        double r, g, b;
+        if (h < 60)       { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else if (h < 180) { r = 0; g = c; b = x; }
+        else if (h < 240) { r = 0; g = x; b = c; }
+        else if (h < 300) { r = x; g = 0; b = c; }
+        else              { r = c; g = 0; b = x; }
+        int ri = (int) Math.round((r + m) * 255);
+        int gi = (int) Math.round((g + m) * 255);
+        int bi = (int) Math.round((b + m) * 255);
+        return String.format("#%02x%02x%02x", ri, gi, bi);
     }
 
     public Node getRoot() {

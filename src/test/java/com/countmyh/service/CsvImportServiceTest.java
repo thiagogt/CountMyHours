@@ -69,7 +69,7 @@ class CsvImportServiceTest {
         File csv = createCsvFile("""
                 Data;Cliente;Projeto;Item;Hs
                 01/06/2026;Opus;Medscript;task;8
-                bad line here
+                bad;line;here;missing;date
                 02/06/2026;Opus;Medscript;task2;4
                 """);
 
@@ -156,9 +156,61 @@ class CsvImportServiceTest {
         assertNull(service.parseCsvLine("a;b;c", 1));
     }
 
+    @Test
+    void shouldRejectCommaDelimitedCsv() {
+        File csv = createCsvFileUnchecked("""
+                Data,Cliente,Projeto,Item,Hs
+                01/02/2017,Opus,admin,task,4
+                """);
+
+        var ex = assertThrows(IOException.class, () -> service.importFile(csv));
+        assertTrue(ex.getMessage().contains("comma"));
+        assertTrue(ex.getMessage().contains("semicolon"));
+    }
+
+    @Test
+    void shouldRejectCsvWithNoDelimiter() {
+        File csv = createCsvFileUnchecked("Data Cliente Projeto Item Hs\n");
+
+        var ex = assertThrows(IOException.class, () -> service.importFile(csv));
+        assertTrue(ex.getMessage().contains("delimiter"));
+    }
+
+    @Test
+    void shouldRejectCsvWithTooFewColumns() {
+        File csv = createCsvFileUnchecked("Data;Cliente;Projeto\n01/06/2026;Opus;Med\n");
+
+        var ex = assertThrows(IOException.class, () -> service.importFile(csv));
+        assertTrue(ex.getMessage().contains("5 columns"));
+    }
+
+    @Test
+    void shouldRejectCsvWithWrongHeaderNames() {
+        File csv = createCsvFileUnchecked("Data;Name;Type;Desc;Value\n01/06/2026;A;B;C;8\n");
+
+        var ex = assertThrows(IOException.class, () -> service.importFile(csv));
+        assertTrue(ex.getMessage().contains("header"));
+    }
+
+    @Test
+    void shouldAcceptDataWithoutHeaderRow() throws IOException {
+        File csv = createCsvFile("01/06/2026;Opus;Medscript;task;8\n02/06/2026;Opus;Medscript;task2;4\n");
+
+        List<WorkHourItem> items = service.importFile(csv);
+        assertEquals(2, items.size());
+    }
+
     private File createCsvFile(String content) throws IOException {
         Path csvPath = tempDir.resolve("test.csv");
         Files.writeString(csvPath, content);
         return csvPath.toFile();
+    }
+
+    private File createCsvFileUnchecked(String content) {
+        try {
+            return createCsvFile(content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

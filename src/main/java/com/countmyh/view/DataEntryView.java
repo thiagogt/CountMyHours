@@ -5,6 +5,7 @@ import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.Toast;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,6 +22,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -42,11 +44,11 @@ public class DataEntryView {
     private final JsonPersistenceService persistenceService;
     private final Runnable onDataChanged;
     private final VBox content;
+    private final StackPane rootStack;
 
     private static final String CSV_HEADER = "Data;Cliente;Projeto;Item;Hs";
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private Label statusLabel;
     private TableView<WorkHourItem> table;
     private TableView<ImportRecord> importHistoryTable;
     private ComboBox<String> filterYear;
@@ -61,6 +63,7 @@ public class DataEntryView {
         this.onDataChanged = onDataChanged;
         this.content = new VBox(20);
         this.content.setPadding(new Insets(24));
+        this.rootStack = new StackPane();
         build();
     }
 
@@ -68,7 +71,11 @@ public class DataEntryView {
         var title = new Label("Data");
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        content.getChildren().addAll(title, buildImportSection(), buildImportHistorySection(), buildFilters(), buildTable(), buildStatusSection());
+        content.getChildren().addAll(title, buildImportSection(), buildImportHistorySection(), buildFilters(), buildTable());
+    }
+
+    private void toast(String message, Toast.Type type) {
+        Toast.show(rootStack, message, type);
     }
 
     private Node buildImportSection() {
@@ -205,8 +212,7 @@ public class DataEntryView {
                 .toList();
 
         if (entries.isEmpty()) {
-            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("No entries found for " + record.fileName());
+            toast("No entries found for " + record.fileName(), Toast.Type.WARNING);
             return;
         }
 
@@ -220,11 +226,9 @@ public class DataEntryView {
 
         try {
             writeItemsToCsv(file, entries);
-            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Exported " + entries.size() + " entries to " + file.getName());
+            toast("Exported " + entries.size() + " entries to " + file.getName(), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Export failed: " + ex.getMessage());
+            toast("Export failed: " + ex.getMessage(), Toast.Type.ERROR);
         }
     }
 
@@ -234,6 +238,7 @@ public class DataEntryView {
                 .count();
 
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
+        styleAlert(alert);
         alert.setTitle("Delete Import");
         alert.setHeaderText("Delete \"" + record.fileName() + "\"?");
         alert.setContentText("This will permanently remove " + count + " entries that were imported from this file.");
@@ -247,13 +252,11 @@ public class DataEntryView {
         try {
             persistenceService.save(data);
         } catch (IOException ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Save failed: " + ex.getMessage());
+            toast("Save failed: " + ex.getMessage(), Toast.Type.ERROR);
             return;
         }
 
-        statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-        statusLabel.setText("Deleted " + removed + " entries from " + record.fileName());
+        toast("Deleted " + removed + " entries from " + record.fileName(), Toast.Type.SUCCESS);
 
         refreshImportHistory();
         refreshFilters();
@@ -359,12 +362,6 @@ public class DataEntryView {
         table.getItems().setAll(filtered);
     }
 
-    private Node buildStatusSection() {
-        statusLabel = new Label("");
-        statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-        return statusLabel;
-    }
-
     private void handleImport() {
         var fileChooser = new FileChooser();
         fileChooser.setTitle("Import work hours");
@@ -416,19 +413,15 @@ public class DataEntryView {
             writeCsvTemplate(file);
             lastOpenedSpreadsheet = file;
             openInSpreadsheetApp(file);
-
-            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Spreadsheet created: " + file.getName() + " — edit, save, then use Import or Reimport Last");
+            toast("Spreadsheet created: " + file.getName(), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Failed to create spreadsheet: " + ex.getMessage());
+            toast("Failed to create spreadsheet: " + ex.getMessage(), Toast.Type.ERROR);
         }
     }
 
     private void handleExportAndEdit() {
         if (data.getEntries().isEmpty()) {
-            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("No entries to export");
+            toast("No entries to export", Toast.Type.WARNING);
             return;
         }
 
@@ -449,19 +442,15 @@ public class DataEntryView {
             writeItemsToCsv(file, sorted);
             lastOpenedSpreadsheet = file;
             openInSpreadsheetApp(file);
-
-            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Exported " + data.getEntries().size() + " entries to " + file.getName() + " — edit, save, then Reimport");
+            toast("Exported " + data.getEntries().size() + " entries to " + file.getName(), Toast.Type.SUCCESS);
         } catch (IOException ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Export failed: " + ex.getMessage());
+            toast("Export failed: " + ex.getMessage(), Toast.Type.ERROR);
         }
     }
 
     private void handleReimportLast() {
         if (lastOpenedSpreadsheet == null || !lastOpenedSpreadsheet.exists()) {
-            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("No spreadsheet to reimport. Use New Spreadsheet or Export & Edit first.");
+            toast("No spreadsheet to reimport. Use New Spreadsheet or Export & Edit first.", Toast.Type.WARNING);
             return;
         }
 
@@ -485,28 +474,25 @@ public class DataEntryView {
             }
 
             persistenceService.save(data);
-
-            statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-            statusLabel.setText("Imported " + added + " new entries from " + file.getName() + " (" + items.size() + " in file)");
+            toast("Imported " + added + " new entries from " + file.getName() + " (" + items.size() + " in file)", Toast.Type.SUCCESS);
 
             refreshImportHistory();
             refreshFilters();
             applyFilters();
             onDataChanged.run();
         } catch (Exception ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Import failed: " + ex.getMessage());
+            toast("Import failed: " + ex.getMessage(), Toast.Type.ERROR);
         }
     }
 
     private void handleEraseAllData() {
         if (data.getEntries().isEmpty()) {
-            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("No data to erase");
+            toast("No data to erase", Toast.Type.WARNING);
             return;
         }
 
         var alert = new Alert(Alert.AlertType.WARNING);
+        styleAlert(alert);
         alert.setTitle("Erase All Data");
         alert.setHeaderText("Are you sure you want to erase all data?");
         alert.setContentText("This will permanently delete all entries, hour sellings, and import history. This action is irreversible.");
@@ -521,13 +507,11 @@ public class DataEntryView {
         try {
             persistenceService.save(data);
         } catch (IOException ex) {
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            statusLabel.setText("Save failed: " + ex.getMessage());
+            toast("Save failed: " + ex.getMessage(), Toast.Type.ERROR);
             return;
         }
 
-        statusLabel.setStyle("-fx-text-fill: #22c55e; -fx-font-weight: bold;");
-        statusLabel.setText("Erased all data (" + totalEntries + " entries removed)");
+        toast("Erased all data (" + totalEntries + " entries removed)", Toast.Type.SUCCESS);
 
         refreshImportHistory();
         refreshFilters();
@@ -551,8 +535,15 @@ public class DataEntryView {
                 new ProcessBuilder("open", file.getAbsolutePath()).start();
             }
         } catch (IOException e) {
-            statusLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
-            statusLabel.setText("File created but could not open automatically: " + file.getAbsolutePath());
+            toast("File created but could not open automatically: " + file.getAbsolutePath(), Toast.Type.WARNING);
+        }
+    }
+
+    private void styleAlert(Alert alert) {
+        var dialogPane = alert.getDialogPane();
+        var css = getClass().getResource("/com/countmyh/dark-theme.css");
+        if (css != null) {
+            dialogPane.getStylesheets().add(css.toExternalForm());
         }
     }
 
@@ -560,6 +551,7 @@ public class DataEntryView {
         var scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        return scrollPane;
+        rootStack.getChildren().add(scrollPane);
+        return rootStack;
     }
 }

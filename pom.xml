@@ -186,6 +186,9 @@
         <version>0.0.8</version>
         <configuration>
           <mainClass>com.countmyh.App</mainClass>
+          <options>
+            <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000</option>
+          </options>
         </configuration>
       </plugin>
 

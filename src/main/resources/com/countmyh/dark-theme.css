@@ -259,3 +259,44 @@
 .spinner .text-field {
     -fx-border-color: transparent;
 }
+
+/* Dialog / Alert */
+.dialog-pane {
+    -fx-background-color: #1a1d27;
+    -fx-border-color: #2a2d3a;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+.dialog-pane .header-panel {
+    -fx-background-color: #1a1d27;
+}
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #e4e4e7;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.dialog-pane .content.label {
+    -fx-text-fill: #8b8d97;
+    -fx-font-size: 13px;
+}
+.dialog-pane .graphic-container {
+    -fx-padding: 0 10 0 0;
+}
+.dialog-pane .button-bar .button {
+    -fx-background-color: #6366f1;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-padding: 8 20;
+    -fx-font-weight: bold;
+}
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #818cf8;
+}
+.dialog-pane .button-bar .button.cancel-button {
+    -fx-background-color: #2a2d3a;
+    -fx-text-fill: #8b8d97;
+}
+.dialog-pane .button-bar .button.cancel-button:hover {
+    -fx-background-color: #3a3d4a;
+    -fx-text-fill: #e4e4e7;
+}

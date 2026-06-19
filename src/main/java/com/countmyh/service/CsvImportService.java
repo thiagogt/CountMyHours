@@ -38,11 +38,14 @@ public class CsvImportService {
         List<WorkHourItem> items = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line = reader.readLine();
-            if (line == null) {
+            String firstLine = reader.readLine();
+            if (firstLine == null) {
                 return items;
             }
-            // Skip header if it looks like one
+
+            validateCsvFormat(firstLine);
+
+            String line = firstLine;
             if (isHeaderLine(line)) {
                 line = reader.readLine();
             }
@@ -61,6 +64,31 @@ public class CsvImportService {
             }
         }
         return items;
+    }
+
+    void validateCsvFormat(String firstLine) throws IOException {
+        if (!firstLine.contains(";")) {
+            if (firstLine.contains(",")) {
+                throw new IOException("Wrong CSV format: file uses comma (,) as delimiter. Expected semicolon (;). "
+                        + "Required format: Data;Cliente;Projeto;Item;Hs");
+            }
+            throw new IOException("Wrong CSV format: delimiter ';' not found. "
+                    + "Required format: Data;Cliente;Projeto;Item;Hs");
+        }
+
+        String[] parts = firstLine.split(";", -1);
+        if (parts.length < 5) {
+            throw new IOException("Wrong CSV format: expected at least 5 columns (Data;Cliente;Projeto;Item;Hs) "
+                    + "but found " + parts.length);
+        }
+
+        if (isHeaderLine(firstLine)) {
+            String header = firstLine.toLowerCase().trim();
+            if (!header.contains("cliente") || !header.contains("projeto")) {
+                throw new IOException("Wrong CSV format: header doesn't match expected columns. "
+                        + "Required: Data;Cliente;Projeto;Item;Hs");
+            }
+        }
     }
 
     List<WorkHourItem> importXlsx(File file) throws IOException {
