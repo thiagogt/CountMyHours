@@ -326,22 +326,22 @@ public class DataEntryView {
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().date().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         ));
-        colDate.setPrefWidth(100);
+        colDate.setMinWidth(100);
 
         var colClient = new TableColumn<WorkHourItem, String>(I18n.get("data.col.client"));
         colClient.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().client()));
-        colClient.setPrefWidth(100);
+        colClient.setMinWidth(100);
 
         var colProject = new TableColumn<WorkHourItem, String>(I18n.get("data.col.project"));
         colProject.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().project()));
-        colProject.setPrefWidth(140);
+        colProject.setMinWidth(140);
 
         var colItem = new TableColumn<WorkHourItem, String>(I18n.get("data.col.item"));
         colItem.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().item()));
-
+        colItem.setMinWidth(100);
         var colHours = new TableColumn<WorkHourItem, Number>(I18n.get("data.col.hours"));
         colHours.setCellValueFactory(cd -> new SimpleDoubleProperty(cd.getValue().hours()));
-        colHours.setPrefWidth(70);
+        colHours.setMinWidth(70);
 
         table.getColumns().addAll(colDate, colClient, colProject, colItem, colHours);
         applyFilters();
