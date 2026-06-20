@@ -133,7 +133,7 @@ public class CsvImportService {
         try {
             LocalDate date = LocalDate.parse(parts[0].trim(), DATE_FORMAT);
             String client = parts[1].trim();
-            String project = parts[2].trim();
+            String project = parts[2].trim().toLowerCase();
             String item = parts[3].trim();
             double hours = parseHours(parts[4].trim());
 
