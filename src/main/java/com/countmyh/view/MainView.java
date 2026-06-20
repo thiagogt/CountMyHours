@@ -16,6 +16,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -33,6 +35,7 @@ public class MainView {
     private TimelineView timelineView;
     private ExtraHoursView extraHoursView;
     private DataEntryView dataEntryView;
+    private SettingsView settingsView;
     private ToggleButton btnDashboard;
     private String currentView = "dashboard";
     private boolean viewsStale = false;
@@ -77,12 +80,18 @@ public class MainView {
         var btnExtra = createNavButton(I18n.get("nav.extra"), group);
         var btnData = createNavButton(I18n.get("nav.data"), group);
 
+        var btnSettings = createNavButton(I18n.get("nav.settings"), group);
+
         btnDashboard.setOnAction(e -> showView("dashboard"));
         btnTimeline.setOnAction(e -> showView("timeline"));
         btnExtra.setOnAction(e -> showView("extra"));
         btnData.setOnAction(e -> showView("data"));
+        btnSettings.setOnAction(e -> showView("settings"));
 
-        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnData);
+        var spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnData, spacer, btnSettings);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
         sidebar.setMinWidth(200);
@@ -113,6 +122,7 @@ public class MainView {
             case "timeline" -> getTimelineView();
             case "extra" -> getExtraHoursView();
             case "data" -> getDataEntryView();
+            case "settings" -> getSettingsView();
             default -> new Label("Unknown view");
         };
         contentArea.getChildren().add(view);
@@ -136,6 +146,17 @@ public class MainView {
     private Node getDataEntryView() {
         dataEntryView = new DataEntryView(data, csvImportService, persistenceService, this::refreshViews);
         return dataEntryView.getRoot();
+    }
+
+    private Node getSettingsView() {
+        settingsView = new SettingsView(this::rebuildUI);
+        return settingsView.getRoot();
+    }
+
+    private void rebuildUI() {
+        root.setLeft(null);
+        buildSidebar();
+        root.setCenter(contentArea);
     }
 
     public void refreshViews() {

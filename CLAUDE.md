@@ -52,6 +52,7 @@ Data;Cliente;Projeto;Item;Hs
 - **Erase All Data**: clears all entries, hour sellings, and import history with confirmation dialog. Calls `WorkPeriodTracker.clearAll()`.
 - **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
 - **Month Balance view** (`ExtraHoursView`): monthly cards with worked/expected/extra/accumulated hours. Editable vacation days, holiday count, and holiday observation per month. Custom holidays adjust expected hours. All persisted to data.json.
+- **Settings view** (`SettingsView`): language selector (English/pt-BR, rebuilds UI on apply) and uninstall (deletes `~/.countmyhours/`, closes app). Pinned at sidebar bottom.
 - Each imported entry is tagged with `sourceFile` for traceability
 
 ## Build & Run
@@ -71,7 +72,7 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23)
 - Bundles JDK runtime + JavaFX + all dependencies (~52MB)
-- Output: `target/installer/CountMyHours-2.0.0.dmg`
+- Output: `target/installer/CountMyHours-2.1.0.dmg`
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions

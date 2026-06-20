@@ -58,5 +58,6 @@ XLSX files with the same column structure are also supported.
 - Internationalization (i18n) support — English and Portuguese (pt-BR)
 - Splash screen with animated blinking clock logo
 - Sample data auto-loaded on first launch (Disney-themed example entries)
+- Settings view with language selector and uninstall
 - Dark theme UI
 - macOS `.dmg` installer (`./package-macos.sh`)
