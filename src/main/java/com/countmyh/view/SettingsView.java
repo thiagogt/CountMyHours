@@ -1,5 +1,8 @@
 package com.countmyh.view;
 
+import com.countmyh.model.WorkPeriodTracker;
+import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.ColorPalette;
 import com.countmyh.util.I18n;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -8,12 +11,14 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,10 +30,15 @@ public class SettingsView {
 
     private static final Path DATA_DIR = Path.of(System.getProperty("user.home"), ".countmyhours");
 
+    private final WorkPeriodTracker data;
+    private final JsonPersistenceService persistenceService;
     private final Runnable onLanguageChanged;
     private final VBox content;
 
-    public SettingsView(Runnable onLanguageChanged) {
+    public SettingsView(WorkPeriodTracker data, JsonPersistenceService persistenceService,
+                        Runnable onLanguageChanged) {
+        this.data = data;
+        this.persistenceService = persistenceService;
         this.onLanguageChanged = onLanguageChanged;
         this.content = new VBox(20);
         this.content.setPadding(new Insets(24));
@@ -39,7 +49,7 @@ public class SettingsView {
         var title = new Label(I18n.get("settings.title"));
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
-        content.getChildren().addAll(title, buildLanguageSection(), buildUninstallSection());
+        content.getChildren().addAll(title, buildLanguageSection(), buildProjectManageSection(), buildUninstallSection());
     }
 
     private Node buildLanguageSection() {
@@ -86,6 +96,68 @@ public class SettingsView {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         container.getChildren().addAll(sectionTitle, desc, buttons, btnApply);
+        return container;
+    }
+
+    private Node buildProjectManageSection() {
+        var container = new VBox(12);
+        container.getStyleClass().add("chart-container");
+
+        var sectionTitle = new Label(I18n.get("settings.projects"));
+        sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
+
+        var desc = new Label(I18n.get("settings.projects.desc"));
+        desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 12px; -fx-wrap-text: true;");
+        desc.setWrapText(true);
+
+        var projectList = new VBox(6);
+        projectList.setPadding(new Insets(4, 0, 0, 0));
+
+        var projects = data.getEntries().stream()
+                .map(e -> e.project())
+                .distinct()
+                .sorted()
+                .toList();
+
+        for (String project : projects) {
+            var dot = new Rectangle(10, 10);
+            dot.setStyle("-fx-fill: " + ColorPalette.getColor(project) + "; -fx-arc-width: 10; -fx-arc-height: 10;");
+
+            var label = new Label(project);
+            label.setStyle("-fx-text-fill: #e4e4e7; -fx-font-size: 13px;");
+
+            long hours = Math.round(data.getEntries().stream()
+                    .filter(e -> e.project().equals(project))
+                    .mapToDouble(e -> e.hours())
+                    .sum());
+            var hoursLabel = new Label(hours + "h");
+            hoursLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+
+            var cb = new CheckBox(I18n.get("settings.projects.visible"));
+            cb.setSelected(!data.isProjectHidden(project));
+            cb.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+
+            cb.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                data.setProjectHidden(project, !isSelected);
+                try {
+                    persistenceService.save(data);
+                } catch (IOException ignored) {}
+            });
+
+            var row = new HBox(10, dot, label, hoursLabel, cb);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setPadding(new Insets(4, 8, 4, 8));
+            row.setStyle("-fx-background-color: #0f1117; -fx-background-radius: 6;");
+            projectList.getChildren().add(row);
+        }
+
+        if (projects.isEmpty()) {
+            var empty = new Label(I18n.get("settings.projects.empty"));
+            empty.setStyle("-fx-text-fill: #8b8d97;");
+            projectList.getChildren().add(empty);
+        }
+
+        container.getChildren().addAll(sectionTitle, desc, projectList);
         return container;
     }
 

@@ -23,7 +23,7 @@ public class CalculationService {
     // -- Aggregation --
 
     public Map<String, Map<YearMonth, Double>> getMonthlyHoursByProject(WorkPeriodTracker data, int startYear, int endYear) {
-        return data.getEntries().stream()
+        return data.getVisibleEntries().stream()
                 .filter(e -> e.year() >= startYear && e.year() <= endYear)
                 .collect(Collectors.groupingBy(
                         WorkHourItem::project,
@@ -36,7 +36,7 @@ public class CalculationService {
     }
 
     public Map<YearMonth, Double> getMonthlyTotalWorked(WorkPeriodTracker data) {
-        return data.getEntries().stream()
+        return data.getVisibleEntries().stream()
                 .collect(Collectors.groupingBy(
                         e -> YearMonth.of(e.year(), e.month()),
                         TreeMap::new,
@@ -45,7 +45,7 @@ public class CalculationService {
     }
 
     public Map<Integer, Double> getYearlyTotals(WorkPeriodTracker data) {
-        return data.getEntries().stream()
+        return data.getVisibleEntries().stream()
                 .collect(Collectors.groupingBy(
                         WorkHourItem::year,
                         TreeMap::new,
@@ -189,7 +189,7 @@ public class CalculationService {
     // -- Summaries --
 
     public List<ProjectSummary> getProjectSummaries(WorkPeriodTracker data) {
-        return data.getEntries().stream()
+        return data.getVisibleEntries().stream()
                 .collect(Collectors.groupingBy(WorkHourItem::project))
                 .entrySet().stream()
                 .map(e -> {
@@ -213,11 +213,11 @@ public class CalculationService {
     }
 
     public double getTotalHours(WorkPeriodTracker data) {
-        return data.getEntries().stream().mapToDouble(WorkHourItem::hours).sum();
+        return data.getVisibleEntries().stream().mapToDouble(WorkHourItem::hours).sum();
     }
 
     public int getTotalProjects(WorkPeriodTracker data) {
-        return (int) data.getEntries().stream()
+        return (int) data.getVisibleEntries().stream()
                 .map(WorkHourItem::project)
                 .filter(p -> !p.equalsIgnoreCase("admin"))
                 .distinct().count();
@@ -245,7 +245,7 @@ public class CalculationService {
     }
 
     public Map<String, YearMonth[]> getProjectDateRanges(WorkPeriodTracker data) {
-        return data.getEntries().stream()
+        return data.getVisibleEntries().stream()
                 .collect(Collectors.groupingBy(WorkHourItem::project))
                 .entrySet().stream()
                 .collect(Collectors.toMap(

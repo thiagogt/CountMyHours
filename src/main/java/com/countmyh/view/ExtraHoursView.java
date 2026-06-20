@@ -15,6 +15,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
@@ -239,8 +240,9 @@ public class ExtraHoursView {
 
     private HBox buildVacationRow(YearMonth ym, int currentDays) {
         var lbl = new Label(I18n.get("extra.vacation"));
-        lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
+        lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-cursor: hand;");
         lbl.setMinWidth(70);
+        Tooltip.install(lbl, new Tooltip(I18n.get("extra.vacation.tip")));
 
         var spinner = new Spinner<Integer>();
         spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 30, currentDays));

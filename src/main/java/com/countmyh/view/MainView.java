@@ -149,7 +149,7 @@ public class MainView {
     }
 
     private Node getSettingsView() {
-        settingsView = new SettingsView(this::rebuildUI);
+        settingsView = new SettingsView(data, persistenceService, this::rebuildUI);
         return settingsView.getRoot();
     }
 

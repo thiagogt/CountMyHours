@@ -1,5 +1,7 @@
 package com.countmyh.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ public class WorkPeriodTracker {
     private List<ImportRecord> importHistory;
     private List<VacationEntry> vacationDays;
     private List<MonthNote> monthNotes;
+    private List<String> hiddenProjects;
     private LocalDateTime lastImportDate;
     private String lastSourceFile;
 
@@ -20,6 +23,7 @@ public class WorkPeriodTracker {
         this.importHistory = new ArrayList<>();
         this.vacationDays = new ArrayList<>();
         this.monthNotes = new ArrayList<>();
+        this.hiddenProjects = new ArrayList<>();
     }
 
     public List<WorkHourItem> getEntries() {
@@ -103,6 +107,32 @@ public class WorkPeriodTracker {
                 .findFirst().orElse(null);
     }
 
+    public List<String> getHiddenProjects() {
+        return hiddenProjects;
+    }
+
+    public void setHiddenProjects(List<String> hiddenProjects) {
+        this.hiddenProjects = hiddenProjects != null ? hiddenProjects : new ArrayList<>();
+    }
+
+    public boolean isProjectHidden(String project) {
+        return hiddenProjects.contains(project);
+    }
+
+    public void setProjectHidden(String project, boolean hidden) {
+        hiddenProjects.remove(project);
+        if (hidden) {
+            hiddenProjects.add(project);
+        }
+    }
+
+    @JsonIgnore
+    public List<WorkHourItem> getVisibleEntries() {
+        return entries.stream()
+                .filter(e -> !hiddenProjects.contains(e.project()))
+                .toList();
+    }
+
     public void addEntry(WorkHourItem entry) {
         entries.add(entry);
     }
@@ -142,6 +172,7 @@ public class WorkPeriodTracker {
         importHistory.clear();
         vacationDays.clear();
         monthNotes.clear();
+        hiddenProjects.clear();
         lastImportDate = null;
         lastSourceFile = null;
     }
