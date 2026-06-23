@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.0] - 2026-06-23
+
+### Added
+- **Project Management** in Settings — toggle visibility per project with checkbox; hidden projects excluded from Dashboard, Timeline, and Month Balance charts/calculations
+- **Half-day support** for holidays and vacation — spinners use 0.5 step increments (e.g., 1.5 holidays = 1 full + 1 half-day = 12h deducted)
+- **Vacation tooltip** — asterisk on Vacation* label with hover explanation to enter only working days
+- Dark-themed dialog styling for all Alert popups
+
+### Changed
+- `VacationEntry.days` and `MonthNote.holidays` changed from `int` to `double`
+- `CalculationService` uses `getVisibleEntries()` to respect hidden projects
+- `WorkPeriodTracker.getVisibleEntries()` annotated with `@JsonIgnore`
+- Project names lowercased on CSV import
+
 ## [2.1.0] - 2026-06-20
 
 ### Added

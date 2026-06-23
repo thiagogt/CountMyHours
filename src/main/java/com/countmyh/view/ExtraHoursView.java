@@ -163,15 +163,16 @@ public class ExtraHoursView {
 
         var autoHolidays = businessDayService.getHolidaysInMonth(ym.getYear(), ym.getMonthValue());
         var monthNote = data.getMonthNote(ym.getYear(), ym.getMonthValue());
-        int holidayCount = monthNote != null ? monthNote.holidays() : autoHolidays.size();
+        double holidayCount = monthNote != null ? monthNote.holidays() : autoHolidays.size();
         String defaultObs = autoHolidays.stream()
                 .map(e -> e.getKey().format(DateTimeFormatter.ofPattern("dd")) + " " + e.getValue())
                 .collect(Collectors.joining(", "));
         String observation = monthNote != null ? monthNote.observation() : defaultObs;
 
-        int effectiveDays = businessDays - (holidayCount - autoHolidays.size()) - mb.vacationDays();
+        double effectiveDays = businessDays - (holidayCount - autoHolidays.size()) - mb.vacationDays();
         var workedRow = buildRow(I18n.get("extra.worked"), String.format("%.0fh", mb.worked()), "#e4e4e7");
-        var expectedRow = buildRow(I18n.get("extra.expected"), String.format("%.0fh (%dd)", mb.expected(), effectiveDays), "#8b8d97");
+        String daysStr = effectiveDays % 1 == 0 ? String.format("%.0fd", effectiveDays) : String.format("%.1fd", effectiveDays);
+        var expectedRow = buildRow(I18n.get("extra.expected"), String.format("%.0fh (%s)", mb.expected(), daysStr), "#8b8d97");
 
         var holidayRow = buildHolidayRow(ym, holidayCount);
         var obsRow = buildObservationRow(ym, observation, holidayCount);
@@ -193,13 +194,13 @@ public class ExtraHoursView {
         return card;
     }
 
-    private HBox buildHolidayRow(YearMonth ym, int currentCount) {
+    private HBox buildHolidayRow(YearMonth ym, double currentCount) {
         var lbl = new Label(I18n.get("extra.holidays"));
         lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
         lbl.setMinWidth(70);
 
-        var spinner = new Spinner<Integer>();
-        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 15, currentCount));
+        var spinner = new Spinner<Double>();
+        spinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 15, currentCount, 0.5));
         spinner.setPrefWidth(65);
         spinner.setPrefHeight(22);
         spinner.setStyle("-fx-font-size: 11px;");
@@ -221,7 +222,7 @@ public class ExtraHoursView {
         return row;
     }
 
-    private Node buildObservationRow(YearMonth ym, String observation, int holidayCount) {
+    private Node buildObservationRow(YearMonth ym, String observation, double holidayCount) {
         var field = new TextField(observation);
         field.setPromptText(I18n.get("extra.obs.prompt"));
         field.setStyle("-fx-font-size: 10px; -fx-padding: 3 6; -fx-background-color: #0f1117; "
@@ -238,14 +239,14 @@ public class ExtraHoursView {
         return field;
     }
 
-    private HBox buildVacationRow(YearMonth ym, int currentDays) {
+    private HBox buildVacationRow(YearMonth ym, double currentDays) {
         var lbl = new Label(I18n.get("extra.vacation"));
         lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-cursor: hand;");
         lbl.setMinWidth(70);
         Tooltip.install(lbl, new Tooltip(I18n.get("extra.vacation.tip")));
 
-        var spinner = new Spinner<Integer>();
-        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 30, currentDays));
+        var spinner = new Spinner<Double>();
+        spinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 30, currentDays, 0.5));
         spinner.setPrefWidth(65);
         spinner.setPrefHeight(22);
         spinner.setStyle("-fx-font-size: 11px;");

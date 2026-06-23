@@ -1,3 +1,3 @@
 package com.countmyh.model;
 
-public record MonthNote(int year, int month, int holidays, String observation) {}
+public record MonthNote(int year, int month, double holidays, String observation) {}

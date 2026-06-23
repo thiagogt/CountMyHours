@@ -70,33 +70,21 @@ public class WorkPeriodTracker {
         return vacationDays;
     }
 
-    public void setVacationDays(List<VacationEntry> vacationDays) {
-        this.vacationDays = vacationDays != null ? vacationDays : new ArrayList<>();
-    }
-
-    public void setVacation(int year, int month, int days) {
+    public void setVacation(int year, int month, double days) {
         vacationDays.removeIf(v -> v.year() == year && v.month() == month);
         if (days > 0) {
             vacationDays.add(new VacationEntry(year, month, days));
         }
     }
 
-    public int getVacation(int year, int month) {
+    public double getVacation(int year, int month) {
         return vacationDays.stream()
                 .filter(v -> v.year() == year && v.month() == month)
-                .mapToInt(VacationEntry::days)
+                .mapToDouble(VacationEntry::days)
                 .findFirst().orElse(0);
     }
 
-    public List<MonthNote> getMonthNotes() {
-        return monthNotes;
-    }
-
-    public void setMonthNotes(List<MonthNote> monthNotes) {
-        this.monthNotes = monthNotes != null ? monthNotes : new ArrayList<>();
-    }
-
-    public void setMonthNote(int year, int month, int holidays, String observation) {
+    public void setMonthNote(int year, int month, double holidays, String observation) {
         monthNotes.removeIf(n -> n.year() == year && n.month() == month);
         monthNotes.add(new MonthNote(year, month, holidays, observation));
     }
@@ -105,14 +93,6 @@ public class WorkPeriodTracker {
         return monthNotes.stream()
                 .filter(n -> n.year() == year && n.month() == month)
                 .findFirst().orElse(null);
-    }
-
-    public List<String> getHiddenProjects() {
-        return hiddenProjects;
-    }
-
-    public void setHiddenProjects(List<String> hiddenProjects) {
-        this.hiddenProjects = hiddenProjects != null ? hiddenProjects : new ArrayList<>();
     }
 
     public boolean isProjectHidden(String project) {

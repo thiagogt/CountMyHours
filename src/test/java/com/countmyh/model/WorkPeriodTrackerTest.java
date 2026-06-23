@@ -149,16 +149,16 @@ class WorkPeriodTrackerTest {
     void shouldSetAndGetVacation() {
         var tracker = new WorkPeriodTracker();
         tracker.setVacation(2026, 7, 10);
-        assertEquals(10, tracker.getVacation(2026, 7));
-        assertEquals(0, tracker.getVacation(2026, 6));
+        assertEquals(10.0, tracker.getVacation(2026, 7));
+        assertEquals(0.0, tracker.getVacation(2026, 6));
     }
 
     @Test
     void setVacationShouldReplaceExisting() {
         var tracker = new WorkPeriodTracker();
         tracker.setVacation(2026, 7, 10);
-        tracker.setVacation(2026, 7, 5);
-        assertEquals(5, tracker.getVacation(2026, 7));
+        tracker.setVacation(2026, 7, 5.5);
+        assertEquals(5.5, tracker.getVacation(2026, 7));
         assertEquals(1, tracker.getVacationDays().size());
     }
 
@@ -167,7 +167,7 @@ class WorkPeriodTrackerTest {
         var tracker = new WorkPeriodTracker();
         tracker.setVacation(2026, 7, 10);
         tracker.setVacation(2026, 7, 0);
-        assertEquals(0, tracker.getVacation(2026, 7));
+        assertEquals(0.0, tracker.getVacation(2026, 7));
         assertTrue(tracker.getVacationDays().isEmpty());
     }
 

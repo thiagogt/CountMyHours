@@ -62,13 +62,13 @@ public class CalculationService {
         for (var entry : worked.entrySet()) {
             YearMonth ym = entry.getKey();
             double w = entry.getValue();
-            int baseBusinessDays = businessDayService.getBusinessDays(ym.getYear(), ym.getMonthValue());
-            int autoHolidays = businessDayService.getHolidaysInMonth(ym.getYear(), ym.getMonthValue()).size();
+            double baseBusinessDays = businessDayService.getBusinessDays(ym.getYear(), ym.getMonthValue());
+            double autoHolidays = businessDayService.getHolidaysInMonth(ym.getYear(), ym.getMonthValue()).size();
             var monthNote = data.getMonthNote(ym.getYear(), ym.getMonthValue());
-            int customHolidays = monthNote != null ? monthNote.holidays() : autoHolidays;
-            int extraHolidays = customHolidays - autoHolidays;
-            int vacationDays = data.getVacation(ym.getYear(), ym.getMonthValue());
-            int effectiveDays = baseBusinessDays - extraHolidays - vacationDays;
+            double customHolidays = monthNote != null ? monthNote.holidays() : autoHolidays;
+            double extraHolidays = customHolidays - autoHolidays;
+            double vacationDays = data.getVacation(ym.getYear(), ym.getMonthValue());
+            double effectiveDays = baseBusinessDays - extraHolidays - vacationDays;
             double expected = effectiveDays * 8.0;
             result.put(ym, new MonthlyBalance(w, expected, w - expected, vacationDays));
         }
@@ -78,7 +78,7 @@ public class CalculationService {
     public Map<Integer, YearlyBalance> getYearlyBalance(WorkPeriodTracker data) {
         Map<YearMonth, MonthlyBalance> monthly = getMonthlyBalance(data);
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, _) -> a));
 
         Map<Integer, YearlyBalance> result = new TreeMap<>();
 
@@ -114,7 +114,7 @@ public class CalculationService {
                 data, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, _) -> a));
 
         Map<String, Double> projectGrossExtra = new LinkedHashMap<>();
         Map<String, Double> projectTotalHours = new LinkedHashMap<>();
@@ -264,7 +264,7 @@ public class CalculationService {
 
     // -- Records --
 
-    public record MonthlyBalance(double worked, double expected, double extra, int vacationDays) {}
+    public record MonthlyBalance(double worked, double expected, double extra, double vacationDays) {}
 
     public record YearlyBalance(double worked, double gross, double sold, double vacationSold, double net, String note) {}
 

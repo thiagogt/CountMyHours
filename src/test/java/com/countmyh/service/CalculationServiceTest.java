@@ -135,7 +135,7 @@ class CalculationServiceTest {
         var june = result.get(YearMonth.of(2026, 6));
 
         assertEquals(128.0, june.expected()); // 168 - (5*8)
-        assertEquals(5, june.vacationDays());
+        assertEquals(5.0, june.vacationDays());
         assertEquals(-28.0, june.extra()); // 100 - 128
     }
 

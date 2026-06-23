@@ -38,7 +38,7 @@ class CsvImportServiceTest {
         List<WorkHourItem> items = service.importFile(csv);
 
         assertEquals(3, items.size());
-        assertEquals("Medscript", items.getFirst().project());
+        assertEquals("medscript", items.getFirst().project());
         assertEquals(LocalDate.of(2026, 6, 1), items.getFirst().date());
         assertEquals(8.0, items.getFirst().hours());
         assertEquals("Opus", items.getFirst().client());
