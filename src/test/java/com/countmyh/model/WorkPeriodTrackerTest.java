@@ -181,4 +181,70 @@ class WorkPeriodTrackerTest {
 
         assertTrue(tracker.getImportHistory().isEmpty());
     }
+
+    @Test
+    void shouldSetAndGetMonthSelling() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setMonthSelling(2026, 6, 80.0);
+        assertEquals(80.0, tracker.getMonthSelling(2026, 6));
+        assertEquals(0.0, tracker.getMonthSelling(2026, 5));
+    }
+
+    @Test
+    void setMonthSellingShouldReplaceExisting() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setMonthSelling(2026, 6, 80.0);
+        tracker.setMonthSelling(2026, 6, 40.0);
+        assertEquals(40.0, tracker.getMonthSelling(2026, 6));
+        assertEquals(1, tracker.getMonthSellings().size());
+    }
+
+    @Test
+    void setMonthSellingZeroShouldRemoveEntry() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setMonthSelling(2026, 6, 80.0);
+        tracker.setMonthSelling(2026, 6, 0);
+        assertEquals(0.0, tracker.getMonthSelling(2026, 6));
+        assertTrue(tracker.getMonthSellings().isEmpty());
+    }
+
+    @Test
+    void shouldSetAndGetYearlySelling() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setYearlySelling(2026, 160.0, 5, "bonus");
+        var selling = tracker.getYearlySelling(2026);
+        assertNotNull(selling);
+        assertEquals(160.0, selling.hoursSold());
+        assertEquals(5, selling.vacationDaysSold());
+        assertEquals("bonus", selling.note());
+    }
+
+    @Test
+    void setYearlySellingNullShouldReplaceExisting() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setYearlySelling(2026, 100.0, 0, "first");
+        tracker.setYearlySelling(2026, 200.0, 10, "second");
+        var selling = tracker.getYearlySelling(2026);
+        assertNotNull(selling);
+        assertEquals(200.0, selling.hoursSold());
+        assertEquals(1, tracker.getHourSellings().size());
+    }
+
+    @Test
+    void getYearlySellingUnknownYearShouldReturnNull() {
+        var tracker = new WorkPeriodTracker();
+        assertNull(tracker.getYearlySelling(2099));
+    }
+
+    @Test
+    void clearAllShouldAlsoClearMonthSellings() {
+        var tracker = new WorkPeriodTracker();
+        tracker.setMonthSelling(2026, 6, 80.0);
+        tracker.setYearlySelling(2026, 160.0, 0, null);
+
+        tracker.clearAll();
+
+        assertTrue(tracker.getMonthSellings().isEmpty());
+        assertTrue(tracker.getHourSellings().isEmpty());
+    }
 }

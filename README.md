@@ -54,7 +54,7 @@ XLSX files with the same column structure are also supported.
 - Project timeline and yearly totals
 - Extra hours tracking: gross extras, hours sold, net balance
 - Per-project extra hours breakdown with proportional sold-hours attribution
-- Hour selling records management
+- **Hour Selling view**: record sold hours per month or per year with spinners; yearly mode also tracks vacation days sold and a note
 - Internationalization (i18n) support — English and Portuguese (pt-BR)
 - Splash screen with animated blinking clock logo
 - Sample data auto-loaded on first launch (Disney-themed example entries)

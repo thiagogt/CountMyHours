@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.0.2] - 2026-06-25
+
+### Added
+- **Hour Selling view** — new sidebar section to record sold hours per month or per year
+  - Monthly mode: one card per month with a "Sold" spinner; stored as `MonthSelling` (year + month + hoursSold)
+  - Yearly mode: one card per year with spinners for hours sold and vacation days sold, plus a note field; stored in `WorkHourSelling`
+  - Both modes show worked hours per period as context and share the same year filter buttons
+- `MonthSelling` model record (year, month, hoursSold) for month-level sold-hours tracking
+- `WorkPeriodTracker.setYearlySelling()` — upsert helper replacing append-only `addHourSelling` for edits
+- `WorkPeriodTracker.getYearlySelling(year)` — lookup helper for yearly selling
+
 ## [2.2.0] - 2026-06-23
 
 ### Added

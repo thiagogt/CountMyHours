@@ -6,7 +6,7 @@ Pure Java desktop app (no Spring Boot). Three-layer structure:
 
 - **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
 - **service/** — Business logic: import, persistence, calculations, business day calendar
-- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), DataEntry, Settings
+- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), HourSelling, DataEntry, Settings
 - **util/** — Chart styling, color palette, month names, i18n, toast notifications
 
 No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `--add-modules`.
@@ -15,10 +15,11 @@ No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `
 
 - `WorkHourItem` — Java record. One row from CSV: date (LocalDate), client, project, item, hours, sourceFile. Convenience constructor without sourceFile. `withSourceFile()` for immutable copy. equals/hashCode excludes sourceFile.
 - `WorkHourSelling` — Java record: year, hoursSold, vacationDaysSold, note. Derived `vacationHoursSold()`.
+- `MonthSelling` — Java record: year, month, hoursSold. Stores hours sold per calendar month.
 - `ImportRecord` — Java record: fileName, filePath, importDate, entriesImported. equals/hashCode on filePath + importDate only.
 - `VacationEntry` — Java record: year, month, days (double, supports half-day with 0.5)
 - `MonthNote` — Java record: year, month, holidays (double, supports half-day), observation (holiday names/notes)
-- `WorkPeriodTracker` — Mutable class (not a record): entries + sellings + importHistory + vacationDays + monthNotes + hiddenProjects + metadata. `getVisibleEntries()` filters out hidden projects (used by CalculationService). `@JsonIgnore` on derived getters.
+- `WorkPeriodTracker` — Mutable class (not a record): entries + sellings + importHistory + vacationDays + monthNotes + monthSellings + hiddenProjects + metadata. `getVisibleEntries()` filters out hidden projects (used by CalculationService). `@JsonIgnore` on derived getters. `setYearlySelling(year, hoursSold, vacDays, note)` and `setMonthSelling(year, month, hours)` are upsert helpers (remove-then-add).
 
 All monthly/yearly aggregations are computed by `CalculationService`, not stored.
 Record accessors use component-name style (`item.date()`, `item.project()`) not getter style (`getDate()`).
@@ -51,6 +52,7 @@ Data;Cliente;Projeto;Item;Hs
 - **Erase All Data**: clears all entries, hour sellings, and import history with confirmation dialog. Calls `WorkPeriodTracker.clearAll()`.
 - **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
 - **Month Balance view** (`ExtraHoursView`): monthly cards with worked/expected/extra/accumulated hours. Editable vacation days and holiday count (double spinners with 0.5 step for half-days), holiday observation text field (auto-filled from Brazilian calendar). Custom holidays adjust expected hours. All persisted to data.json.
+- **Hour Selling view** (`HourSellingView`): toggle between Monthly and Yearly mode. Monthly mode shows one card per month with a spinner for hours sold that month (stored as `MonthSelling`). Yearly mode shows one card per year with spinners for hoursSold and vacationDaysSold, plus a note field (stored as `WorkHourSelling`). Both modes have a year filter row. Cards display worked hours as context.
 - **Settings view** (`SettingsView`): language selector (English/pt-BR, rebuilds UI on apply), project management (toggle visibility per project — hidden projects excluded from all charts/calculations), and uninstall (deletes `~/.countmyhours/`, closes app). Pinned at sidebar bottom.
 - Each imported entry is tagged with `sourceFile` for traceability
 
@@ -71,7 +73,7 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23)
 - Bundles JDK runtime + JavaFX + all dependencies (~52MB)
-- Output: `target/installer/CountMyHours-2.2.0.dmg`
+- Output: `target/installer/CountMyHours-3.0.2.dmg`
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions

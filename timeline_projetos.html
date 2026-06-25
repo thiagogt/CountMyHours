@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline de Projetos - Horas Trabalhadas</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --muted: #8b8d97;
+    --accent: #6366f1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .stat-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-card .detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .chart-container h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .chart-wrapper { position: relative; width: 100%; }
+  .chart-wrapper.tall { height: 500px; }
+  .chart-wrapper.medium { height: 400px; }
+  .chart-wrapper.gantt { height: 340px; }
+
+  .project-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .project-table th {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .project-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .project-table tr:last-child td { border-bottom: none; }
+  .project-table tr:hover { background: rgba(99,102,241,0.06); }
+  .color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .bar-cell {
+    position: relative;
+    padding-right: 60px !important;
+  }
+  .bar-bg {
+    height: 22px;
+    border-radius: 4px;
+    opacity: 0.8;
+  }
+  .bar-val {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .positive { color: #22c55e; }
+  .negative { color: #ef4444; }
+  .extra-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .extra-badge.pos { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .extra-badge.neg { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .two-cols { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Timeline de Projetos</h1>
+<p class="subtitle">Horas trabalhadas por projeto - 2017 a 2026</p>
+
+<div class="stats-grid" id="stats-grid"></div>
+
+<div class="chart-container">
+  <h2>Horas Mensais por Projeto</h2>
+  <div class="filters" id="year-filters"></div>
+  <div class="chart-wrapper tall">
+    <canvas id="stackedChart"></canvas>
+  </div>
+</div>
+
+<div class="two-cols">
+  <div class="chart-container">
+    <h2>Timeline dos Projetos</h2>
+    <div class="chart-wrapper gantt">
+      <canvas id="ganttChart"></canvas>
+    </div>
+  </div>
+  <div class="chart-container">
+    <h2>Horas Totais por Ano</h2>
+    <div class="chart-wrapper gantt">
+      <canvas id="yearlyChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h2>Balanco de Horas Extras por Ano (com venda de horas)</h2>
+  <div class="chart-wrapper medium">
+    <canvas id="yearlyBalanceChart"></canvas>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h2>Horas Extras por Projeto (atribuicao proporcional)</h2>
+  <div class="two-cols" style="margin-bottom:20px">
+    <div class="chart-wrapper" style="height:420px">
+      <canvas id="extraChart"></canvas>
+    </div>
+    <div class="chart-wrapper" style="height:420px">
+      <canvas id="extraYearlyChart"></canvas>
+    </div>
+  </div>
+  <table class="project-table" id="extra-table">
+    <thead>
+      <tr>
+        <th>Projeto</th>
+        <th>Horas Trabalhadas</th>
+        <th>Horas Extras Brutas</th>
+        <th>Horas Vendidas</th>
+        <th>Saldo Liquido</th>
+        <th style="width:25%">Distribuicao</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="chart-container">
+  <h2>Horas Extras Mensais (Trabalhado vs Esperado)</h2>
+  <div class="chart-wrapper tall">
+    <canvas id="monthlyExtraChart"></canvas>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h2>Distribuicao por Projeto</h2>
+  <table class="project-table" id="project-table">
+    <thead>
+      <tr>
+        <th>Projeto</th>
+        <th>Periodo</th>
+        <th>Meses</th>
+        <th style="width:45%">Horas Totais</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const DATA = {
+  "admin": [
+    {"year":2017,"month":2,"hours":26.5},{"year":2017,"month":3,"hours":8.5},{"year":2017,"month":4,"hours":28.5},
+    {"year":2017,"month":5,"hours":17},{"year":2017,"month":6,"hours":14},{"year":2017,"month":7,"hours":25},
+    {"year":2017,"month":8,"hours":42},{"year":2017,"month":9,"hours":2.5},{"year":2017,"month":10,"hours":24},
+    {"year":2017,"month":11,"hours":40},{"year":2017,"month":12,"hours":27.5},
+    {"year":2018,"month":2,"hours":11},{"year":2018,"month":3,"hours":16},{"year":2018,"month":4,"hours":15},
+    {"year":2018,"month":5,"hours":23},{"year":2018,"month":6,"hours":11},{"year":2018,"month":7,"hours":15},
+    {"year":2018,"month":8,"hours":10},{"year":2018,"month":9,"hours":14},{"year":2018,"month":10,"hours":28},
+    {"year":2018,"month":11,"hours":8},{"year":2018,"month":12,"hours":42},
+    {"year":2019,"month":2,"hours":19},{"year":2019,"month":3,"hours":28},{"year":2019,"month":4,"hours":45},
+    {"year":2019,"month":5,"hours":37},{"year":2019,"month":6,"hours":65},{"year":2019,"month":7,"hours":76},
+    {"year":2019,"month":9,"hours":3},{"year":2019,"month":11,"hours":43},{"year":2019,"month":12,"hours":93},
+    {"year":2020,"month":1,"hours":13},{"year":2020,"month":2,"hours":8},{"year":2020,"month":3,"hours":6},
+    {"year":2020,"month":4,"hours":9},{"year":2020,"month":5,"hours":13},{"year":2020,"month":6,"hours":22},
+    {"year":2020,"month":7,"hours":7},{"year":2020,"month":8,"hours":19},{"year":2020,"month":9,"hours":63},
+    {"year":2020,"month":10,"hours":12},{"year":2020,"month":11,"hours":7},{"year":2020,"month":12,"hours":12},
+    {"year":2021,"month":2,"hours":3},{"year":2021,"month":3,"hours":2},{"year":2021,"month":4,"hours":4},
+    {"year":2021,"month":5,"hours":34},{"year":2021,"month":6,"hours":5},{"year":2021,"month":7,"hours":13},
+    {"year":2021,"month":8,"hours":6},{"year":2021,"month":9,"hours":7},{"year":2021,"month":10,"hours":24},
+    {"year":2021,"month":11,"hours":10},
+    {"year":2022,"month":2,"hours":25},{"year":2022,"month":3,"hours":19},{"year":2022,"month":4,"hours":6},
+    {"year":2022,"month":5,"hours":4},{"year":2022,"month":6,"hours":9},{"year":2022,"month":7,"hours":4},
+    {"year":2022,"month":8,"hours":9},{"year":2022,"month":9,"hours":5},{"year":2022,"month":10,"hours":6},
+    {"year":2022,"month":12,"hours":6},
+    {"year":2023,"month":3,"hours":8},{"year":2023,"month":4,"hours":2},{"year":2023,"month":5,"hours":18},
+    {"year":2023,"month":6,"hours":8},{"year":2023,"month":7,"hours":40},{"year":2023,"month":8,"hours":195},
+    {"year":2023,"month":9,"hours":145},{"year":2023,"month":10,"hours":159},{"year":2023,"month":11,"hours":2},
+    {"year":2023,"month":12,"hours":3},
+    {"year":2024,"month":2,"hours":2},{"year":2024,"month":9,"hours":4},{"year":2024,"month":10,"hours":6},
+    {"year":2024,"month":11,"hours":14},{"year":2024,"month":12,"hours":1},
+    {"year":2025,"month":3,"hours":1},{"year":2025,"month":4,"hours":3},{"year":2025,"month":5,"hours":2},
+    {"year":2025,"month":7,"hours":0},{"year":2025,"month":8,"hours":0},{"year":2025,"month":9,"hours":0},
+    {"year":2025,"month":10,"hours":0},{"year":2025,"month":11,"hours":0},
+    {"year":2026,"month":1,"hours":6},{"year":2026,"month":2,"hours":40},{"year":2026,"month":3,"hours":98}
+  ],
+  "FieldForce Goodyear": [
+    {"year":2017,"month":2,"hours":142},{"year":2017,"month":3,"hours":153.5},{"year":2017,"month":4,"hours":123},
+    {"year":2017,"month":5,"hours":174},{"year":2017,"month":6,"hours":164},{"year":2017,"month":7,"hours":109},
+    {"year":2017,"month":8,"hours":135},{"year":2017,"month":9,"hours":151.5},{"year":2017,"month":10,"hours":131},
+    {"year":2017,"month":11,"hours":127.5},{"year":2017,"month":12,"hours":98},
+    {"year":2018,"month":2,"hours":110},{"year":2018,"month":3,"hours":64},{"year":2018,"month":4,"hours":27},
+    {"year":2018,"month":5,"hours":42},{"year":2018,"month":6,"hours":22},{"year":2018,"month":7,"hours":32},
+    {"year":2018,"month":8,"hours":67},{"year":2018,"month":9,"hours":71},{"year":2018,"month":10,"hours":61},
+    {"year":2018,"month":11,"hours":21},{"year":2018,"month":12,"hours":10},
+    {"year":2019,"month":2,"hours":10},{"year":2019,"month":3,"hours":11},{"year":2019,"month":4,"hours":7},
+    {"year":2019,"month":6,"hours":2},
+    {"year":2020,"month":4,"hours":4},{"year":2020,"month":5,"hours":7},{"year":2020,"month":6,"hours":34},
+    {"year":2020,"month":7,"hours":1},{"year":2020,"month":10,"hours":4},{"year":2020,"month":11,"hours":1},
+    {"year":2020,"month":12,"hours":2},
+    {"year":2021,"month":2,"hours":3},{"year":2021,"month":3,"hours":6},{"year":2021,"month":5,"hours":2},
+    {"year":2022,"month":5,"hours":2}
+  ],
+  "cbss": [
+    {"year":2018,"month":2,"hours":6},{"year":2018,"month":3,"hours":133},{"year":2018,"month":4,"hours":123},
+    {"year":2018,"month":5,"hours":120},{"year":2018,"month":6,"hours":136},{"year":2018,"month":7,"hours":139},
+    {"year":2018,"month":8,"hours":117},{"year":2018,"month":9,"hours":68},{"year":2018,"month":10,"hours":49},
+    {"year":2018,"month":11,"hours":8},
+    {"year":2019,"month":6,"hours":73},{"year":2019,"month":7,"hours":89},{"year":2019,"month":8,"hours":170},
+    {"year":2019,"month":9,"hours":165},{"year":2019,"month":10,"hours":184},{"year":2019,"month":11,"hours":125},
+    {"year":2019,"month":12,"hours":67},
+    {"year":2020,"month":1,"hours":163},{"year":2020,"month":2,"hours":128},{"year":2020,"month":3,"hours":168},
+    {"year":2020,"month":4,"hours":157},{"year":2020,"month":5,"hours":108},{"year":2020,"month":6,"hours":119},
+    {"year":2020,"month":7,"hours":195},{"year":2020,"month":8,"hours":143},{"year":2020,"month":9,"hours":109},
+    {"year":2020,"month":10,"hours":204},{"year":2020,"month":11,"hours":152},{"year":2020,"month":12,"hours":173},
+    {"year":2021,"month":2,"hours":107},{"year":2021,"month":3,"hours":184},{"year":2021,"month":4,"hours":162},
+    {"year":2021,"month":5,"hours":161},{"year":2021,"month":6,"hours":158},{"year":2021,"month":7,"hours":149},
+    {"year":2021,"month":8,"hours":182},{"year":2021,"month":9,"hours":143},{"year":2021,"month":10,"hours":136},
+    {"year":2021,"month":11,"hours":159},{"year":2021,"month":12,"hours":171},
+    {"year":2022,"month":2,"hours":106},{"year":2022,"month":3,"hours":165},{"year":2022,"month":4,"hours":149},
+    {"year":2022,"month":5,"hours":181},{"year":2022,"month":6,"hours":154},{"year":2022,"month":7,"hours":141},
+    {"year":2022,"month":8,"hours":181},{"year":2022,"month":9,"hours":160},{"year":2022,"month":10,"hours":165},
+    {"year":2022,"month":11,"hours":166},{"year":2022,"month":12,"hours":171},
+    {"year":2023,"month":1,"hours":42},{"year":2023,"month":2,"hours":75},{"year":2023,"month":3,"hours":188},
+    {"year":2023,"month":4,"hours":134},{"year":2023,"month":5,"hours":167},{"year":2023,"month":6,"hours":149},
+    {"year":2023,"month":7,"hours":80}
+  ],
+  "OOF": [
+    {"year":2024,"month":5,"hours":168},{"year":2024,"month":6,"hours":151},
+    {"year":2024,"month":7,"hours":139},{"year":2024,"month":8,"hours":172},
+    {"year":2024,"month":9,"hours":176},{"year":2024,"month":10,"hours":173},
+    {"year":2024,"month":11,"hours":137},{"year":2024,"month":12,"hours":167},
+    {"year":2025,"month":1,"hours":18},{"year":2025,"month":2,"hours":123},
+    {"year":2025,"month":3,"hours":182},{"year":2025,"month":4,"hours":141},
+    {"year":2025,"month":5,"hours":200},{"year":2025,"month":6,"hours":168},
+    {"year":2025,"month":7,"hours":181},{"year":2025,"month":8,"hours":164},
+    {"year":2025,"month":9,"hours":184},{"year":2025,"month":10,"hours":173},
+    {"year":2025,"month":11,"hours":157},
+    {"year":2026,"month":1,"hours":95}
+  ],
+  "pagbem": [
+    {"year":2023,"month":10,"hours":16},{"year":2023,"month":11,"hours":164},
+    {"year":2023,"month":12,"hours":157},
+    {"year":2024,"month":1,"hours":80},{"year":2024,"month":2,"hours":72},
+    {"year":2024,"month":3,"hours":189},{"year":2024,"month":4,"hours":217}
+  ],
+  "Kiosk Mc Operation": [
+    {"year":2019,"month":2,"hours":131},{"year":2019,"month":3,"hours":131},
+    {"year":2019,"month":4,"hours":126},{"year":2019,"month":5,"hours":134}
+  ],
+  "Medscript": [
+    {"year":2026,"month":3,"hours":102},{"year":2026,"month":4,"hours":183},
+    {"year":2026,"month":5,"hours":163}
+  ],
+  "iFood": [
+    {"year":2018,"month":10,"hours":21},{"year":2018,"month":11,"hours":128},
+    {"year":2018,"month":12,"hours":93}
+  ],
+  "Yconnect Yazigi": [
+    {"year":2017,"month":2,"hours":1.5},{"year":2017,"month":3,"hours":7},
+    {"year":2017,"month":4,"hours":4},{"year":2017,"month":5,"hours":1},
+    {"year":2017,"month":7,"hours":2},{"year":2017,"month":8,"hours":8},
+    {"year":2017,"month":9,"hours":2},{"year":2017,"month":12,"hours":3.5},
+    {"year":2018,"month":2,"hours":10},{"year":2018,"month":5,"hours":6},
+    {"year":2018,"month":8,"hours":2}
+  ],
+  "Tablet Commerce": [
+    {"year":2017,"month":8,"hours":3},{"year":2017,"month":11,"hours":15},
+    {"year":2018,"month":7,"hours":16}
+  ],
+  "Carrefour": [
+    {"year":2018,"month":10,"hours":2}
+  ]
+};
+
+const COLORS = {
+  "cbss":               { bg: "#6366f1", border: "#818cf8" },
+  "OOF":                { bg: "#a855f7", border: "#c084fc" },
+  "FieldForce Goodyear":{ bg: "#22d3ee", border: "#67e8f9" },
+  "admin":              { bg: "#64748b", border: "#94a3b8" },
+  "pagbem":             { bg: "#f59e0b", border: "#fbbf24" },
+  "Kiosk Mc Operation": { bg: "#10b981", border: "#34d399" },
+  "Medscript":          { bg: "#ef4444", border: "#f87171" },
+  "iFood":              { bg: "#ec4899", border: "#f472b6" },
+  "Yconnect Yazigi":    { bg: "#14b8a6", border: "#2dd4bf" },
+  "Tablet Commerce":    { bg: "#8b5cf6", border: "#a78bfa" },
+  "Carrefour":          { bg: "#f97316", border: "#fb923c" }
+};
+
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// --- Stats ---
+const MONTHLY_EXPECTED = [
+  {"year":2017,"month":2,"worked":170,"expected":140,"extra":30},
+  {"year":2017,"month":3,"worked":169,"expected":184,"extra":-15},
+  {"year":2017,"month":4,"worked":156,"expected":140,"extra":16},
+  {"year":2017,"month":5,"worked":192,"expected":184,"extra":8},
+  {"year":2017,"month":6,"worked":178,"expected":168,"extra":10},
+  {"year":2017,"month":7,"worked":136,"expected":168,"extra":-32},
+  {"year":2017,"month":8,"worked":188,"expected":184,"extra":4},
+  {"year":2017,"month":9,"worked":156,"expected":160,"extra":-4},
+  {"year":2017,"month":10,"worked":155,"expected":168,"extra":-13},
+  {"year":2017,"month":11,"worked":182,"expected":152,"extra":30},
+  {"year":2017,"month":12,"worked":129,"expected":160,"extra":-31},
+  {"year":2018,"month":2,"worked":137,"expected":140,"extra":-3},
+  {"year":2018,"month":3,"worked":213,"expected":168,"extra":45},
+  {"year":2018,"month":4,"worked":165,"expected":160,"extra":5},
+  {"year":2018,"month":5,"worked":191,"expected":168,"extra":23},
+  {"year":2018,"month":6,"worked":169,"expected":168,"extra":1},
+  {"year":2018,"month":7,"worked":202,"expected":168,"extra":34},
+  {"year":2018,"month":8,"worked":196,"expected":184,"extra":12},
+  {"year":2018,"month":9,"worked":153,"expected":152,"extra":1},
+  {"year":2018,"month":10,"worked":161,"expected":160,"extra":1},
+  {"year":2018,"month":11,"worked":165,"expected":152,"extra":13},
+  {"year":2018,"month":12,"worked":145,"expected":144,"extra":1},
+  {"year":2019,"month":2,"worked":160,"expected":160,"extra":0},
+  {"year":2019,"month":3,"worked":170,"expected":148,"extra":22},
+  {"year":2019,"month":4,"worked":178,"expected":168,"extra":10},
+  {"year":2019,"month":5,"worked":171,"expected":168,"extra":3},
+  {"year":2019,"month":6,"worked":140,"expected":152,"extra":-12},
+  {"year":2019,"month":7,"worked":165,"expected":184,"extra":-19},
+  {"year":2019,"month":8,"worked":170,"expected":176,"extra":-6},
+  {"year":2019,"month":9,"worked":168,"expected":168,"extra":0},
+  {"year":2019,"month":10,"worked":184,"expected":184,"extra":0},
+  {"year":2019,"month":11,"worked":168,"expected":168,"extra":0},
+  {"year":2019,"month":12,"worked":160,"expected":160,"extra":0},
+  {"year":2020,"month":1,"worked":176,"expected":152,"extra":24},
+  {"year":2020,"month":2,"worked":136,"expected":144,"extra":-8},
+  {"year":2020,"month":3,"worked":174,"expected":176,"extra":-2},
+  {"year":2020,"month":4,"worked":170,"expected":160,"extra":10},
+  {"year":2020,"month":5,"worked":128,"expected":136,"extra":-8},
+  {"year":2020,"month":6,"worked":175,"expected":176,"extra":-1},
+  {"year":2020,"month":7,"worked":203,"expected":184,"extra":19},
+  {"year":2020,"month":8,"worked":162,"expected":168,"extra":-6},
+  {"year":2020,"month":9,"worked":172,"expected":176,"extra":-4},
+  {"year":2020,"month":10,"worked":220,"expected":168,"extra":52},
+  {"year":2020,"month":11,"worked":160,"expected":160,"extra":0},
+  {"year":2020,"month":12,"worked":187,"expected":168,"extra":19},
+  {"year":2021,"month":2,"worked":113,"expected":140,"extra":-27},
+  {"year":2021,"month":3,"worked":192,"expected":184,"extra":8},
+  {"year":2021,"month":4,"worked":166,"expected":160,"extra":6},
+  {"year":2021,"month":5,"worked":197,"expected":168,"extra":29},
+  {"year":2021,"month":6,"worked":163,"expected":160,"extra":3},
+  {"year":2021,"month":7,"worked":162,"expected":152,"extra":10},
+  {"year":2021,"month":8,"worked":186,"expected":176,"extra":10},
+  {"year":2021,"month":9,"worked":150,"expected":160,"extra":-10},
+  {"year":2021,"month":10,"worked":160,"expected":160,"extra":0},
+  {"year":2021,"month":11,"worked":169,"expected":168,"extra":1},
+  {"year":2021,"month":12,"worked":171,"expected":168,"extra":3},
+  {"year":2022,"month":2,"worked":131,"expected":136,"extra":-5},
+  {"year":2022,"month":3,"worked":184,"expected":172,"extra":12},
+  {"year":2022,"month":4,"worked":155,"expected":152,"extra":3},
+  {"year":2022,"month":5,"worked":185,"expected":176,"extra":9},
+  {"year":2022,"month":6,"worked":163,"expected":168,"extra":-5},
+  {"year":2022,"month":7,"worked":145,"expected":168,"extra":-23},
+  {"year":2022,"month":8,"worked":190,"expected":184,"extra":6},
+  {"year":2022,"month":9,"worked":165,"expected":168,"extra":-3},
+  {"year":2022,"month":10,"worked":171,"expected":160,"extra":11},
+  {"year":2022,"month":11,"worked":166,"expected":160,"extra":6},
+  {"year":2022,"month":12,"worked":177,"expected":176,"extra":1},
+  {"year":2023,"month":2,"worked":75,"expected":100,"extra":-25},
+  {"year":2023,"month":3,"worked":196,"expected":184,"extra":12},
+  {"year":2023,"month":4,"worked":136,"expected":144,"extra":-8},
+  {"year":2023,"month":5,"worked":185,"expected":176,"extra":9},
+  {"year":2023,"month":6,"worked":157,"expected":168,"extra":-11},
+  {"year":2023,"month":7,"worked":120,"expected":168,"extra":-48},
+  {"year":2023,"month":8,"worked":195,"expected":184,"extra":11},
+  {"year":2023,"month":9,"worked":145,"expected":160,"extra":-15},
+  {"year":2023,"month":10,"worked":175,"expected":168,"extra":7},
+  {"year":2023,"month":11,"worked":166,"expected":152,"extra":14},
+  {"year":2023,"month":12,"worked":160,"expected":160,"extra":0},
+  {"year":2024,"month":1,"worked":80,"expected":88,"extra":-8},
+  {"year":2024,"month":2,"worked":74,"expected":80,"extra":-6},
+  {"year":2024,"month":3,"worked":189,"expected":160,"extra":29},
+  {"year":2024,"month":4,"worked":217,"expected":176,"extra":41},
+  {"year":2024,"month":5,"worked":168,"expected":160,"extra":8},
+  {"year":2024,"month":6,"worked":151,"expected":160,"extra":-9},
+  {"year":2024,"month":7,"worked":139,"expected":176,"extra":-37},
+  {"year":2024,"month":8,"worked":172,"expected":176,"extra":-4},
+  {"year":2024,"month":9,"worked":180,"expected":168,"extra":12},
+  {"year":2024,"month":10,"worked":179,"expected":184,"extra":-5},
+  {"year":2024,"month":11,"worked":151,"expected":152,"extra":-1},
+  {"year":2024,"month":12,"worked":168,"expected":160,"extra":8},
+  {"year":2025,"month":1,"worked":18,"expected":16,"extra":2},
+  {"year":2025,"month":2,"worked":123,"expected":123,"extra":0},
+  {"year":2025,"month":3,"worked":183,"expected":140,"extra":43},
+  {"year":2025,"month":4,"worked":144,"expected":160,"extra":-16},
+  {"year":2025,"month":5,"worked":202,"expected":160,"extra":42},
+  {"year":2025,"month":6,"worked":184,"expected":160,"extra":24},
+  {"year":2025,"month":7,"worked":181,"expected":176,"extra":5},
+  {"year":2025,"month":8,"worked":164,"expected":168,"extra":-4},
+  {"year":2025,"month":9,"worked":184,"expected":168,"extra":16},
+  {"year":2025,"month":10,"worked":173,"expected":184,"extra":-11},
+  {"year":2025,"month":11,"worked":157,"expected":152,"extra":5},
+  {"year":2025,"month":12,"worked":142,"expected":168,"extra":-26},
+  {"year":2026,"month":1,"worked":101,"expected":80,"extra":21},
+  {"year":2026,"month":2,"worked":40,"expected":56,"extra":-16},
+  {"year":2026,"month":3,"worked":200,"expected":184,"extra":16},
+  {"year":2026,"month":4,"worked":183,"expected":160,"extra":23},
+  {"year":2026,"month":5,"worked":163,"expected":160,"extra":3}
+];
+
+// Hours sold per year: from spreadsheet "Obs: x horas removidas das horas trabalhadas"
+// 2017: 18h, 2018: 16h, 2023: 12h, 2024: 70h (29h Mar + 41h Apr)
+// 2020: Sold vacation (30 days = 240h) — tracked separately
+const HOURS_SOLD = {
+  2017: { sold: 18, note: '18h vendidas' },
+  2018: { sold: 16, note: '16h vendidas' },
+  2020: { sold: 0, vacation_sold: 240, note: 'Vendeu ferias (30 dias)' },
+  2023: { sold: 12, note: '12h vendidas (Nov)' },
+  2024: { sold: 70, note: '70h vendidas (29h Mar + 41h Abr)' }
+};
+
+// Spreadsheet's authoritative yearly totals (already net of sold hours)
+const YEARLY_TOTALS_SPREADSHEET = {
+  2017: { extra_net: -15, worked: 1793, days: 226 },
+  2018: { extra_net: 109, worked: 1881, days: 221.5 },
+  2019: { extra_net: -2, worked: 1834, days: 229.5 },
+  2020: { extra_net: 95, worked: 2063, days: 246 },
+  2021: { extra_net: 17, worked: 1829, days: 226.5 },
+  2022: { extra_net: 12, worked: 1832, days: 227.5 },
+  2023: { extra_net: -24, worked: 1740, days: 220.5 },
+  2024: { extra_net: -42, worked: 1798, days: 230 },
+  2025: { extra_net: 59, worked: 1855, days: 224.5 },
+  2026: { extra_net: 47, worked: 687, days: 80 }
+};
+
+// Gross extra (before selling) = net + sold
+const YEARLY_BALANCE = {};
+for (const [y, t] of Object.entries(YEARLY_TOTALS_SPREADSHEET)) {
+  const sold = HOURS_SOLD[y]?.sold || 0;
+  const vacSold = HOURS_SOLD[y]?.vacation_sold || 0;
+  YEARLY_BALANCE[y] = {
+    gross: t.extra_net + sold,
+    sold: sold,
+    vacation_sold: vacSold,
+    net: t.extra_net,
+    note: HOURS_SOLD[y]?.note || null,
+    worked: t.worked,
+    days: t.days
+  };
+}
+
+// Per-project extra hours (gross, before selling)
+const EXTRA_PER_PROJECT = {
+  "cbss":               { total: 8715, extra: 187.2, pct: 2.1, yearly: {2018:107,2019:-22,2020:89,2021:36,2022:22,2023:-44} },
+  "OOF":                { total: 3251, extra: 138.1, pct: 4.2, yearly: {2024:-28,2025:146,2026:20} },
+  "pagbem":             { total: 1084, extra: 99.6, pct: 9.2, yearly: {2023:14,2024:85} },
+  "Kiosk Mc Operation": { total: 653, extra: 43.3, pct: 6.6, yearly: {2019:43} },
+  "Medscript":          { total: 550, extra: 42.3, pct: 7.7, yearly: {2026:42} },
+  "FieldForce Goodyear":{ total: 2148, extra: 33.5, pct: 1.6, yearly: {2017:0,2018:29,2019:3,2020:1,2021:0,2022:0} },
+  "iFood":              { total: 242, extra: 10.9, pct: 4.5, yearly: {2018:11} },
+  "admin":              { total: 2181, extra: 8.5, pct: 0.4, yearly: {2017:0,2018:3,2019:6,2020:6,2021:1,2022:0,2023:-31,2024:2,2025:14,2026:7} },
+  "Yconnect Yazigi":    { total: 54, extra: -1.1, pct: -2.0, yearly: {2017:-2,2018:1} },
+  "Tablet Commerce":    { total: 34, extra: 5.3, pct: 15.5, yearly: {2017:3,2018:3} },
+  "Carrefour":          { total: 2, extra: 0.0, pct: 0.6, yearly: {2018:0} }
+};
+
+// Distribute sold hours proportionally across projects active in that year
+function getProjectSold(proj) {
+  let totalSold = 0;
+  const data = EXTRA_PER_PROJECT[proj];
+  for (const [yearStr, projExtra] of Object.entries(data.yearly)) {
+    const year = Number(yearStr);
+    const yearSold = HOURS_SOLD[year]?.sold || 0;
+    if (yearSold === 0) continue;
+    // Sum all project extras for this year to get proportions
+    let yearTotalExtra = 0;
+    let yearTotalPositive = 0;
+    for (const [p, pData] of Object.entries(EXTRA_PER_PROJECT)) {
+      const pe = pData.yearly[year] || 0;
+      yearTotalExtra += pe;
+      if (pe > 0) yearTotalPositive += pe;
+    }
+    // Attribute sold hours proportionally to projects with positive extra
+    if (yearTotalPositive > 0 && projExtra > 0) {
+      totalSold += yearSold * (projExtra / yearTotalPositive);
+    }
+  }
+  return totalSold;
+}
+
+// Compute net per project
+for (const [proj, data] of Object.entries(EXTRA_PER_PROJECT)) {
+  data.sold = Math.round(getProjectSold(proj) * 10) / 10;
+  data.net = Math.round((data.extra - data.sold) * 10) / 10;
+}
+
+const allEntries = Object.values(DATA).flat();
+const totalHours = allEntries.reduce((s, e) => s + e.hours, 0);
+const projectCount = Object.keys(DATA).filter(p => p !== 'admin').length;
+const yearRange = `2017 - 2026`;
+const totalMonths = new Set(allEntries.map(e => `${e.year}-${e.month}`)).size;
+const totalExtraGross = Object.values(EXTRA_PER_PROJECT).reduce((s, p) => s + p.extra, 0);
+const totalSold = Object.values(HOURS_SOLD).reduce((s, h) => s + h.sold, 0);
+const totalNet = Object.values(YEARLY_TOTALS_SPREADSHEET).reduce((s, t) => s + t.extra_net, 0);
+
+const statsGrid = document.getElementById('stats-grid');
+const stats = [
+  { label: 'Total de Horas', value: totalHours.toLocaleString('pt-BR', {maximumFractionDigits:0}), detail: `${(totalHours/8).toFixed(0)} dias uteis` },
+  { label: 'Projetos', value: projectCount, detail: 'excluindo admin' },
+  { label: 'Periodo', value: yearRange, detail: `${totalMonths} meses com registro` },
+  { label: 'Media Mensal', value: Math.round(totalHours / totalMonths), detail: 'horas/mes' },
+  { label: 'Extras Brutas', value: (totalExtraGross >= 0 ? '+' : '') + totalExtraGross.toFixed(0), detail: 'antes da venda' },
+  { label: 'Horas Vendidas', value: totalSold + 'h', detail: '2017-2024' },
+  { label: 'Saldo Liquido', value: (totalNet >= 0 ? '+' : '') + totalNet, detail: 'planilha oficial' }
+];
+stats.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'stat-card';
+  card.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div><div class="detail">${s.detail}</div>`;
+  statsGrid.appendChild(card);
+});
+
+// --- Stacked Bar Chart ---
+function buildLabels(startYear, endYear) {
+  const labels = [];
+  for (let y = startYear; y <= endYear; y++) {
+    for (let m = 1; m <= 12; m++) {
+      if (y === 2026 && m > 5) break;
+      labels.push(`${MONTH_NAMES[m-1]}/${y}`);
+    }
+  }
+  return labels;
+}
+
+let currentStartYear = 2017;
+let currentEndYear = 2026;
+let stackedChart;
+
+function renderStackedChart(startYear, endYear) {
+  const labels = buildLabels(startYear, endYear);
+  const projectOrder = ['cbss','OOF','FieldForce Goodyear','pagbem','Medscript','Kiosk Mc Operation','iFood','admin','Yconnect Yazigi','Tablet Commerce','Carrefour'];
+
+  const datasets = projectOrder.map(proj => {
+    const entries = DATA[proj] || [];
+    const entryMap = {};
+    entries.forEach(e => { entryMap[`${MONTH_NAMES[e.month-1]}/${e.year}`] = e.hours; });
+    return {
+      label: proj,
+      data: labels.map(l => entryMap[l] || 0),
+      backgroundColor: COLORS[proj]?.bg || '#666',
+      borderColor: COLORS[proj]?.border || '#888',
+      borderWidth: 1,
+      borderRadius: 2
+    };
+  });
+
+  if (stackedChart) stackedChart.destroy();
+
+  stackedChart = new Chart(document.getElementById('stackedChart'), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#8b8d97', usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } } },
+        tooltip: {
+          backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+          borderColor: '#2a2d3a', borderWidth: 1, padding: 12,
+          callbacks: { label: ctx => ctx.raw > 0 ? `${ctx.dataset.label}: ${ctx.raw}h` : null }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true, grid: { color: '#1f2230' },
+          ticks: { color: '#8b8d97', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 40 }
+        },
+        y: {
+          stacked: true, grid: { color: '#1f2230' },
+          ticks: { color: '#8b8d97', callback: v => v + 'h' },
+          title: { display: true, text: 'Horas', color: '#8b8d97' }
+        }
+      }
+    }
+  });
+}
+
+// Year filters
+const filterContainer = document.getElementById('year-filters');
+const ranges = [
+  { label: 'Todos', start: 2017, end: 2026 },
+  { label: '2017-2019', start: 2017, end: 2019 },
+  { label: '2020-2022', start: 2020, end: 2022 },
+  { label: '2023-2024', start: 2023, end: 2024 },
+  { label: '2025-2026', start: 2025, end: 2026 }
+];
+ranges.forEach((r, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'filter-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = r.label;
+  btn.addEventListener('click', () => {
+    filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderStackedChart(r.start, r.end);
+  });
+  filterContainer.appendChild(btn);
+});
+
+renderStackedChart(2017, 2026);
+
+// --- Gantt Chart ---
+const projectsForGantt = Object.keys(DATA).filter(p => p !== 'admin').sort((a, b) => {
+  const firstA = DATA[a][0];
+  const firstB = DATA[b][0];
+  return (firstA.year * 12 + firstA.month) - (firstB.year * 12 + firstB.month);
+});
+
+const ganttLabels = projectsForGantt;
+const minDate = 2017 * 12 + 1;
+
+const ganttDatasets = [{
+  data: projectsForGantt.map(proj => {
+    const entries = DATA[proj];
+    const start = entries[0].year * 12 + entries[0].month;
+    const end = entries[entries.length - 1].year * 12 + entries[entries.length - 1].month;
+    return [start - minDate, end - minDate + 1];
+  }),
+  backgroundColor: projectsForGantt.map(p => COLORS[p]?.bg || '#666'),
+  borderColor: projectsForGantt.map(p => COLORS[p]?.border || '#888'),
+  borderWidth: 1,
+  borderRadius: 6,
+  borderSkipped: false
+}];
+
+new Chart(document.getElementById('ganttChart'), {
+  type: 'bar',
+  data: {
+    labels: ganttLabels,
+    datasets: [{
+      data: projectsForGantt.map(proj => {
+        const entries = DATA[proj];
+        const start = entries[0].year * 12 + entries[0].month - minDate;
+        const end = entries[entries.length - 1].year * 12 + entries[entries.length - 1].month - minDate + 1;
+        return { x: [start, end], y: proj };
+      }),
+      backgroundColor: projectsForGantt.map(p => COLORS[p]?.bg || '#666'),
+      borderColor: projectsForGantt.map(p => COLORS[p]?.border || '#888'),
+      borderWidth: 1,
+      borderRadius: 6,
+      borderSkipped: false,
+      barPercentage: 0.6
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1,
+        callbacks: {
+          label: ctx => {
+            const proj = ctx.label;
+            const entries = DATA[proj];
+            const first = entries[0];
+            const last = entries[entries.length - 1];
+            const total = entries.reduce((s, e) => s + e.hours, 0);
+            return `${MONTH_NAMES[first.month-1]}/${first.year} - ${MONTH_NAMES[last.month-1]}/${last.year} | ${total.toFixed(0)}h`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        min: 0, grid: { color: '#1f2230' },
+        ticks: {
+          color: '#8b8d97', font: { size: 10 },
+          callback: v => { const m = (v + minDate - 1); const yr = Math.floor(m / 12); const mo = m % 12; return mo === 0 ? '' : MONTH_NAMES[mo - 1] + '/' + yr; },
+          stepSize: 6
+        }
+      },
+      y: { grid: { color: '#1f2230' }, ticks: { color: '#e4e4e7', font: { size: 12 } } }
+    }
+  }
+});
+
+// --- Yearly Chart ---
+const yearlyData = {};
+allEntries.forEach(e => { yearlyData[e.year] = (yearlyData[e.year] || 0) + e.hours; });
+const yearLabels = Object.keys(yearlyData).sort();
+const yearValues = yearLabels.map(y => yearlyData[y]);
+
+new Chart(document.getElementById('yearlyChart'), {
+  type: 'bar',
+  data: {
+    labels: yearLabels,
+    datasets: [{
+      data: yearValues,
+      backgroundColor: yearLabels.map((_, i) => {
+        const hue = 240 + (i * 15);
+        return `hsl(${hue}, 70%, 60%)`;
+      }),
+      borderRadius: 6,
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1,
+        callbacks: { label: ctx => `${ctx.raw.toFixed(0)} horas` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#1f2230' }, ticks: { color: '#e4e4e7', font: { size: 12 } } },
+      y: { grid: { color: '#1f2230' }, ticks: { color: '#8b8d97', callback: v => v + 'h' } }
+    }
+  }
+});
+
+// --- Project Table ---
+const tbody = document.querySelector('#project-table tbody');
+const projectSummaries = Object.entries(DATA)
+  .filter(([p]) => p !== 'admin')
+  .map(([proj, entries]) => {
+    const total = entries.reduce((s, e) => s + e.hours, 0);
+    const first = entries[0];
+    const last = entries[entries.length - 1];
+    const months = entries.filter(e => e.hours > 0).length;
+    return { proj, total, first, last, months };
+  })
+  .sort((a, b) => b.total - a.total);
+
+const maxTotal = projectSummaries[0]?.total || 1;
+
+// --- Yearly Balance Chart (gross / sold / net) ---
+const balanceYears = Object.keys(YEARLY_BALANCE).sort();
+
+new Chart(document.getElementById('yearlyBalanceChart'), {
+  type: 'bar',
+  data: {
+    labels: balanceYears,
+    datasets: [
+      {
+        label: 'Extras Brutas',
+        data: balanceYears.map(y => YEARLY_BALANCE[y].gross),
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        borderColor: '#818cf8',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'Horas Vendidas',
+        data: balanceYears.map(y => -YEARLY_BALANCE[y].sold),
+        backgroundColor: 'rgba(249,115,22,0.7)',
+        borderColor: '#fb923c',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'Saldo Liquido (planilha)',
+        data: balanceYears.map(y => YEARLY_BALANCE[y].net),
+        type: 'line',
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34,211,238,0.1)',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: balanceYears.map(y => YEARLY_BALANCE[y].net >= 0 ? '#22c55e' : '#ef4444'),
+        pointBorderColor: balanceYears.map(y => YEARLY_BALANCE[y].net >= 0 ? '#22c55e' : '#ef4444'),
+        fill: false,
+        tension: 0.2,
+        order: 0
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#8b8d97', usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } } },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1, padding: 12,
+        callbacks: {
+          afterBody: (items) => {
+            const y = items[0].label;
+            const b = YEARLY_BALANCE[y];
+            let lines = [`\nTrabalhado: ${b.worked}h (${b.days} dias)`, `Extras brutas: ${b.gross >= 0 ? '+' : ''}${b.gross}h`];
+            if (b.sold > 0) lines.push(`Horas vendidas: -${b.sold}h`);
+            if (b.vacation_sold > 0) lines.push(`Ferias vendidas: ${b.vacation_sold}h (30 dias)`);
+            lines.push(`Saldo liquido: ${b.net >= 0 ? '+' : ''}${b.net}h`);
+            if (b.note) lines.push(`Obs: ${b.note}`);
+            return lines.join('\n');
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#1f2230' }, ticks: { color: '#e4e4e7', font: { size: 13 } } },
+      y: { grid: { color: '#1f2230' }, ticks: { color: '#8b8d97', callback: v => (v >= 0 ? '+' : '') + v + 'h' },
+        title: { display: true, text: 'Horas', color: '#8b8d97' }
+      }
+    }
+  }
+});
+
+// --- Extra Hours Bar Chart (per project, gross vs net) ---
+const extraProjects = Object.entries(EXTRA_PER_PROJECT)
+  .sort((a, b) => b[1].extra - a[1].extra);
+
+new Chart(document.getElementById('extraChart'), {
+  type: 'bar',
+  data: {
+    labels: extraProjects.map(([p]) => p),
+    datasets: [
+      {
+        label: 'Extras Brutas',
+        data: extraProjects.map(([, v]) => v.extra),
+        backgroundColor: extraProjects.map(([, v]) => v.extra >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)'),
+        borderColor: extraProjects.map(([, v]) => v.extra >= 0 ? '#22c55e' : '#ef4444'),
+        borderWidth: 1,
+        borderRadius: 6
+      },
+      {
+        label: 'Vendidas',
+        data: extraProjects.map(([, v]) => v.sold > 0 ? -v.sold : 0),
+        backgroundColor: 'rgba(249,115,22,0.7)',
+        borderColor: '#fb923c',
+        borderWidth: 1,
+        borderRadius: 6
+      }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { color: '#8b8d97', usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 11 } } },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1,
+        callbacks: {
+          afterBody: (items) => {
+            const proj = items[0].label;
+            const d = EXTRA_PER_PROJECT[proj];
+            return `\nBrutas: ${d.extra >= 0 ? '+' : ''}${d.extra.toFixed(1)}h\nVendidas: -${d.sold.toFixed(1)}h\nLiquido: ${d.net >= 0 ? '+' : ''}${d.net.toFixed(1)}h`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#1f2230' }, ticks: { color: '#8b8d97', callback: v => (v >= 0 ? '+' : '') + v + 'h' } },
+      y: { grid: { color: '#1f2230' }, ticks: { color: '#e4e4e7', font: { size: 12 } } }
+    }
+  }
+});
+
+// --- Extra Hours Yearly Stacked ---
+const extraYearlyProjects = Object.entries(EXTRA_PER_PROJECT);
+const allExtraYears = [...new Set(extraYearlyProjects.flatMap(([, v]) => Object.keys(v.yearly).map(Number)))].sort();
+
+new Chart(document.getElementById('extraYearlyChart'), {
+  type: 'bar',
+  data: {
+    labels: allExtraYears,
+    datasets: [
+      ...extraYearlyProjects.map(([proj, v]) => ({
+        label: proj,
+        data: allExtraYears.map(y => v.yearly[y] || 0),
+        backgroundColor: COLORS[proj]?.bg || '#666',
+        borderColor: COLORS[proj]?.border || '#888',
+        borderWidth: 1,
+        borderRadius: 2,
+        stack: 'extras'
+      })),
+      {
+        label: 'Horas Vendidas',
+        data: allExtraYears.map(y => -(HOURS_SOLD[y]?.sold || 0)),
+        backgroundColor: 'rgba(249,115,22,0.8)',
+        borderColor: '#fb923c',
+        borderWidth: 1,
+        borderRadius: 2,
+        stack: 'sold'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#8b8d97', usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 10 } } },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1,
+        callbacks: { label: ctx => ctx.raw !== 0 ? `${ctx.dataset.label}: ${ctx.raw >= 0 ? '+' : ''}${ctx.raw}h` : null }
+      }
+    },
+    scales: {
+      x: { stacked: true, grid: { color: '#1f2230' }, ticks: { color: '#e4e4e7' } },
+      y: { stacked: true, grid: { color: '#1f2230' }, ticks: { color: '#8b8d97', callback: v => (v >= 0 ? '+' : '') + v + 'h' },
+        title: { display: true, text: 'Horas Extras por Ano', color: '#8b8d97' }
+      }
+    }
+  }
+});
+
+// --- Extra Hours Table (with sold hours) ---
+const extraTbody = document.querySelector('#extra-table tbody');
+const extraSorted = Object.entries(EXTRA_PER_PROJECT)
+  .sort((a, b) => b[1].extra - a[1].extra);
+
+const maxExtra = Math.max(...extraSorted.map(([, v]) => Math.abs(v.extra)));
+
+extraSorted.forEach(([proj, v]) => {
+  const tr = document.createElement('tr');
+  const color = COLORS[proj]?.bg || '#666';
+  const isNetPos = v.net >= 0;
+  const pct = Math.abs(v.extra) / maxExtra * 100;
+  const barColor = v.extra >= 0 ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)';
+  const soldPct = v.sold > 0 ? (v.sold / maxExtra * 100) : 0;
+  tr.innerHTML = `
+    <td><span class="color-dot" style="background:${color}"></span>${proj}</td>
+    <td>${v.total.toLocaleString('pt-BR')}h</td>
+    <td class="${v.extra >= 0 ? 'positive' : 'negative'}" style="font-weight:600">${v.extra >= 0 ? '+' : ''}${v.extra.toFixed(1)}h</td>
+    <td style="color:#f97316;font-weight:600">${v.sold > 0 ? '-' + v.sold.toFixed(1) + 'h' : '-'}</td>
+    <td><span class="extra-badge ${isNetPos ? 'pos' : 'neg'}">${isNetPos ? '+' : ''}${v.net.toFixed(1)}h</span></td>
+    <td class="bar-cell">
+      <div style="display:flex;gap:2px">
+        <div class="bar-bg" style="width:${pct}%;background:${barColor}"></div>
+        ${soldPct > 0 ? `<div class="bar-bg" style="width:${soldPct}%;background:rgba(249,115,22,0.5)"></div>` : ''}
+      </div>
+      <span class="bar-val ${isNetPos ? 'positive' : 'negative'}">${isNetPos ? '+' : ''}${v.net.toFixed(0)}h</span>
+    </td>`;
+  extraTbody.appendChild(tr);
+});
+
+// --- Monthly Extra Hours Line Chart ---
+const monthlyLabels = MONTHLY_EXPECTED.map(m => `${MONTH_NAMES[m.month-1]}/${m.year}`);
+
+new Chart(document.getElementById('monthlyExtraChart'), {
+  type: 'bar',
+  data: {
+    labels: monthlyLabels,
+    datasets: [
+      {
+        label: 'Horas Extras',
+        data: MONTHLY_EXPECTED.map(m => m.extra),
+        backgroundColor: MONTHLY_EXPECTED.map(m => m.extra >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)'),
+        borderColor: MONTHLY_EXPECTED.map(m => m.extra >= 0 ? '#22c55e' : '#ef4444'),
+        borderWidth: 1,
+        borderRadius: 3,
+        order: 1
+      },
+      {
+        label: 'Esperado',
+        data: MONTHLY_EXPECTED.map(m => m.expected),
+        type: 'line',
+        borderColor: '#64748b',
+        borderWidth: 1.5,
+        borderDash: [4, 4],
+        pointRadius: 0,
+        fill: false,
+        order: 0,
+        yAxisID: 'y1'
+      },
+      {
+        label: 'Trabalhado',
+        data: MONTHLY_EXPECTED.map(m => m.worked),
+        type: 'line',
+        borderColor: '#a855f7',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+        order: 0,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#8b8d97', usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 12 } } },
+      tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e4e4e7', bodyColor: '#e4e4e7',
+        borderColor: '#2a2d3a', borderWidth: 1, padding: 12,
+        callbacks: {
+          afterBody: (items) => {
+            const idx = items[0].dataIndex;
+            const m = MONTHLY_EXPECTED[idx];
+            return `\nTrabalhado: ${m.worked}h\nEsperado: ${m.expected}h\nDiferenca: ${m.extra >= 0 ? '+' : ''}${m.extra}h`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#1f2230' },
+        ticks: { color: '#8b8d97', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 40 }
+      },
+      y: {
+        position: 'left',
+        grid: { color: '#1f2230' },
+        ticks: { color: '#8b8d97', callback: v => (v >= 0 ? '+' : '') + v + 'h' },
+        title: { display: true, text: 'Horas Extras', color: '#8b8d97' }
+      },
+      y1: {
+        position: 'right',
+        grid: { display: false },
+        ticks: { color: '#8b8d97', callback: v => v + 'h' },
+        title: { display: true, text: 'Horas Totais', color: '#8b8d97' }
+      }
+    }
+  }
+});
+
+projectSummaries.forEach(s => {
+  const tr = document.createElement('tr');
+  const color = COLORS[s.proj]?.bg || '#666';
+  const pct = (s.total / maxTotal * 100).toFixed(1);
+  tr.innerHTML = `
+    <td><span class="color-dot" style="background:${color}"></span>${s.proj}</td>
+    <td>${MONTH_NAMES[s.first.month-1]}/${s.first.year} - ${MONTH_NAMES[s.last.month-1]}/${s.last.year}</td>
+    <td>${s.months}</td>
+    <td class="bar-cell">
+      <div class="bar-bg" style="width:${pct}%;background:${color}"></div>
+      <span class="bar-val">${s.total.toLocaleString('pt-BR',{maximumFractionDigits:0})}h</span>
+    </td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
