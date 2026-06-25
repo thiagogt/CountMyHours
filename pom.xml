@@ -6,47 +6,34 @@
 
   <groupId>com.countmyh</groupId>
   <artifactId>count-my-hours</artifactId>
-  <version>2.2-SNAPSHOT</version>
+  <version>3.0-SNAPSHOT</version>
 
   <name>count-my-hours</name>
   <description>JavaFX desktop app for tracking and visualizing worked hours per project</description>
 
   <properties>
-    <java.version>23</java.version>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>23</maven.compiler.source>
-    <maven.compiler.target>23</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
 
-    <javafx.version>23.0.2</javafx.version>
-    <poi.version>5.3.0</poi.version>
+    <javafx.version>21.0.7</javafx.version>
     <jackson.version>2.18.2</jackson.version>
     <junit.version>5.10.3</junit.version>
     <mockito.version>5.14.2</mockito.version>
+    <graalvm.home>/Users/tgtoledo/Workstation/JDK/graalvm-jdk-21.0.11+9.1/Contents/Home</graalvm.home>
   </properties>
 
   <dependencies>
 
-    <!-- ================================================================================== -->
-    <!-- JavaFX — UI controls and charts (not bundled with JDK, requires separate modules)  -->
-    <!-- ================================================================================== -->
+    <!-- JavaFX -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
       <version>${javafx.version}</version>
     </dependency>
 
-    <!-- ================================================================================== -->
-    <!-- Apache POI — reading .xlsx files                                                   -->
-    <!-- ================================================================================== -->
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi.version}</version>
-    </dependency>
-
-    <!-- ================================================================================== -->
-    <!-- Jackson — JSON serialization/deserialization for data persistence                   -->
-    <!-- ================================================================================== -->
+    <!-- Jackson — JSON persistence -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -58,9 +45,7 @@
       <version>${jackson.version}</version>
     </dependency>
 
-    <!-- ================================================================================== -->
-    <!-- Test — JUnit 5 + Mockito                                                           -->
-    <!-- ================================================================================== -->
+    <!-- Test -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
@@ -91,49 +76,31 @@
   <build>
     <pluginManagement>
       <plugins>
-
-        <!-- clean lifecycle -->
-        <!-- see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
-
-        <!-- ================================================================================== -->
-
-        <!-- process-resources phase -->
-        <!-- generate META-INFS como MANIFEST.MD -->
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
-
-        <!-- Compile phase -->
-        <!-- Compiles Java sources: https://maven.apache.org/plugins/maven-compiler-plugin/index.html -->
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.13.0</version>
           <configuration>
             <verbose>true</verbose>
             <fork>true</fork>
-            <executable>/Users/tgtoledo/Workstation/JDK/zulu23.32.11-ca-jdk23.0.2-macosx_aarch64/zulu-23.jdk/Contents/Home/bin/javac</executable>
-            <release>23</release>
+            <executable>${graalvm.home}/bin/javac</executable>
+            <release>21</release>
           </configuration>
         </plugin>
-
-        <!-- Test phase -->
-        <!-- surefire: Run JUnit unit tests in an isolated classloader -->
-        <!-- https://maven.apache.org/surefire/maven-surefire-plugin/ -->
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.5.2</version>
           <configuration>
-            <jvm>/Users/tgtoledo/Workstation/JDK/zulu23.32.11-ca-jdk23.0.2-macosx_aarch64/zulu-23.jdk/Contents/Home/bin/java</jvm>
+            <jvm>${graalvm.home}/bin/java</jvm>
           </configuration>
         </plugin>
-
-        <!-- Package phase -->
-        <!-- Build a JAR from the current project -->
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.4.2</version>
@@ -147,22 +114,14 @@
             </archive>
           </configuration>
         </plugin>
-
-        <!-- Install phase -->
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
         </plugin>
-
-        <!-- Deploy phase -->
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.8.2</version>
         </plugin>
-
-        <!-- ================================================================================== -->
-
-        <!-- site lifecycle -->
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.7.1</version>
@@ -171,28 +130,41 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
-
-        <!-- ================================================================================== -->
-
       </plugins>
     </pluginManagement>
 
     <plugins>
-      <!-- JavaFX Maven Plugin: run with mvn javafx:run -->
-      <!-- Handles module-path and add-modules automatically for classpath mode -->
+      <!-- JavaFX Maven Plugin -->
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version>
         <configuration>
           <mainClass>com.countmyh.App</mainClass>
-          <options>
-            <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000</option>
-          </options>
         </configuration>
       </plugin>
 
-      <!-- maven-dependency-plugin: copy all runtime deps to target/lib for jpackage -->
+      <!-- GluonFX native-image plugin -->
+      <plugin>
+        <groupId>com.gluonhq</groupId>
+        <artifactId>gluonfx-maven-plugin</artifactId>
+        <version>1.0.28</version>
+        <configuration>
+          <mainClass>com.countmyh.App</mainClass>
+          <graalvmHome>${graalvm.home}</graalvmHome>
+          <target>host</target>
+          <reflectionList>
+            <list>com.countmyh.model.WorkPeriodTracker</list>
+            <list>com.countmyh.model.WorkHourItem</list>
+            <list>com.countmyh.model.WorkHourSelling</list>
+            <list>com.countmyh.model.ImportRecord</list>
+            <list>com.countmyh.model.VacationEntry</list>
+            <list>com.countmyh.model.MonthNote</list>
+          </reflectionList>
+        </configuration>
+      </plugin>
+
+      <!-- Copy deps for jpackage (non-native builds) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>

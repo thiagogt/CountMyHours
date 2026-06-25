@@ -78,7 +78,7 @@ public class CalculationService {
     public Map<Integer, YearlyBalance> getYearlyBalance(WorkPeriodTracker data) {
         Map<YearMonth, MonthlyBalance> monthly = getMonthlyBalance(data);
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, _) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
 
         Map<Integer, YearlyBalance> result = new TreeMap<>();
 
@@ -114,7 +114,7 @@ public class CalculationService {
                 data, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         Map<Integer, WorkHourSelling> sellingByYear = data.getHourSellings().stream()
-                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, _) -> a));
+                .collect(Collectors.toMap(WorkHourSelling::year, s -> s, (a, b) -> a));
 
         Map<String, Double> projectGrossExtra = new LinkedHashMap<>();
         Map<String, Double> projectTotalHours = new LinkedHashMap<>();

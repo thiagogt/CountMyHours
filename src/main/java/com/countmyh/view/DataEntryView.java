@@ -369,10 +369,8 @@ public class DataEntryView {
     private void handleImport() {
         var fileChooser = new FileChooser();
         fileChooser.setTitle(I18n.get("data.import.work.hours"));
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(I18n.get("data.csv.xlsx"), "*.csv", "*.xlsx"),
-                new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv"),
-                new FileChooser.ExtensionFilter(I18n.get("data.excel.files"), "*.xlsx")
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(I18n.get("data.csv.files"), "*.csv")
         );
 
         File file = fileChooser.showOpenDialog(content.getScene().getWindow());

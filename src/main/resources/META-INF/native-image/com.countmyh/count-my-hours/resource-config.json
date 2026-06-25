@@ -1,0 +1,15 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": "com/countmyh/.*"},
+      {"pattern": "com/countmyh/i18n/.*\\.properties"},
+      {"pattern": "com/countmyh/dark-theme\\.css"},
+      {"pattern": "com/countmyh/logo\\.png"},
+      {"pattern": "com/countmyh/logo-blink\\.png"},
+      {"pattern": "com/countmyh/sample-data\\.csv"}
+    ]
+  },
+  "bundles": [
+    {"name": "com.countmyh.i18n.messages"}
+  ]
+}

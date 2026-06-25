@@ -1,16 +1,9 @@
 package com.countmyh.service;
 
 import com.countmyh.model.WorkHourItem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -28,10 +21,8 @@ public class CsvImportService {
         String name = file.getName().toLowerCase();
         if (name.endsWith(".csv")) {
             return importCsv(file);
-        } else if (name.endsWith(".xlsx")) {
-            return importXlsx(file);
         }
-        throw new IOException("Unsupported file format: " + name + ". Expected .csv or .xlsx");
+        throw new IOException("Unsupported file format: " + name + ". Expected .csv");
     }
 
     List<WorkHourItem> importCsv(File file) throws IOException {
@@ -91,34 +82,6 @@ public class CsvImportService {
         }
     }
 
-    List<WorkHourItem> importXlsx(File file) throws IOException {
-        List<WorkHourItem> items = new ArrayList<>();
-
-        try (FileInputStream fis = new FileInputStream(file);
-             Workbook workbook = new XSSFWorkbook(fis)) {
-
-            Sheet sheet = workbook.getSheetAt(0);
-            boolean headerSkipped = false;
-
-            for (Row row : sheet) {
-                if (!headerSkipped) {
-                    headerSkipped = true;
-                    Cell firstCell = row.getCell(0);
-                    if (firstCell != null && firstCell.getCellType() == CellType.STRING
-                            && isHeaderLine(firstCell.getStringCellValue())) {
-                        continue;
-                    }
-                }
-
-                WorkHourItem item = parseXlsxRow(row);
-                if (item != null) {
-                    items.add(item);
-                }
-            }
-        }
-        return items;
-    }
-
     private boolean isHeaderLine(String line) {
         String lower = line.toLowerCase().trim();
         return lower.startsWith("data") || lower.startsWith("date");
@@ -145,52 +108,6 @@ public class CsvImportService {
         } catch (DateTimeParseException | NumberFormatException e) {
             return null;
         }
-    }
-
-    private WorkHourItem parseXlsxRow(Row row) {
-        try {
-            Cell dateCell = row.getCell(0);
-            Cell clientCell = row.getCell(1);
-            Cell projectCell = row.getCell(2);
-            Cell itemCell = row.getCell(3);
-            Cell hoursCell = row.getCell(4);
-
-            if (dateCell == null || clientCell == null || projectCell == null || hoursCell == null) {
-                return null;
-            }
-
-            LocalDate date;
-            if (dateCell.getCellType() == CellType.NUMERIC) {
-                date = dateCell.getLocalDateTimeCellValue().toLocalDate();
-            } else {
-                date = LocalDate.parse(dateCell.getStringCellValue().trim(), DATE_FORMAT);
-            }
-
-            String client = getCellString(clientCell);
-            String project = getCellString(projectCell);
-            String item = itemCell != null ? getCellString(itemCell) : "";
-            double hours;
-            if (hoursCell.getCellType() == CellType.NUMERIC) {
-                hours = hoursCell.getNumericCellValue();
-            } else {
-                hours = parseHours(hoursCell.getStringCellValue().trim());
-            }
-
-            if (client.isEmpty() || project.isEmpty() || hours <= 0) {
-                return null;
-            }
-
-            return new WorkHourItem(date, client, project, item, hours);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private String getCellString(Cell cell) {
-        if (cell == null) return "";
-        if (cell.getCellType() == CellType.STRING) return cell.getStringCellValue().trim();
-        if (cell.getCellType() == CellType.NUMERIC) return String.valueOf((int) cell.getNumericCellValue());
-        return "";
     }
 
     private double parseHours(String value) {

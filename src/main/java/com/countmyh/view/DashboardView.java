@@ -114,7 +114,7 @@ public class DashboardView {
         var allBtn = new ToggleButton(I18n.get("dashboard.all"));
         allBtn.getStyleClass().add("filter-button");
         allBtn.setToggleGroup(group);
-        allBtn.setOnAction(_ -> buildChart(0, 9999));
+        allBtn.setOnAction(e -> buildChart(0, 9999));
         box.getChildren().add(allBtn);
 
         var yearlyTotals = new TreeMap<>(calcService.getYearlyTotals(data));
@@ -125,7 +125,7 @@ public class DashboardView {
             var btn = new ToggleButton(String.valueOf(year));
             btn.getStyleClass().add("filter-button");
             btn.setToggleGroup(group);
-            btn.setOnAction(_ -> buildChart(year, year));
+            btn.setOnAction(e -> buildChart(year, year));
             box.getChildren().add(btn);
             if (year == currentYear) {
                 defaultBtn = btn;
