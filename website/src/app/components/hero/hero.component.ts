@@ -17,7 +17,7 @@ import { Component } from '@angular/core';
           <div>
             <div class="inline-flex items-center gap-2 bg-[#6366f1]/10 border border-[#6366f1]/20 rounded-full px-4 py-1.5 mb-6">
               <span class="w-2 h-2 bg-[#6366f1] rounded-full"></span>
-              <span class="text-[#6366f1] text-sm font-medium">Now on the Mac App Store</span>
+              <span class="text-[#6366f1] text-sm font-medium">Available for macOS · Windows Coming Soon</span>
             </div>
             <h1 class="text-5xl lg:text-6xl font-bold text-[#e4e4e7] leading-tight mb-6">
               Track Every Hour.<br>
@@ -25,14 +25,14 @@ import { Component } from '@angular/core';
             </h1>
             <p class="text-[#9ca3af] text-xl leading-relaxed mb-10">
               Import your timesheets, visualize project hours, and analyze overtime —
-              all stored locally on your Mac. No cloud. No subscription. No compromise.
+              all stored locally on your device. No cloud. No subscription. Pay once, keep forever.
             </p>
             <div class="flex flex-wrap gap-4">
               <a href="#download" class="inline-flex items-center gap-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-semibold px-8 py-4 rounded-xl text-base transition-all hover:shadow-lg hover:shadow-[#6366f1]/25">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Download on Mac App Store
+                Get CountMyHours
               </a>
               <a href="#screenshots" class="inline-flex items-center gap-2 border border-[#2a2d3a] hover:border-[#6366f1]/50 text-[#e4e4e7] font-medium px-8 py-4 rounded-xl text-base transition-all">
                 See Screenshots
@@ -53,8 +53,8 @@ import { Component } from '@angular/core';
               </div>
               <div class="w-px h-10 bg-[#2a2d3a]"></div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-[#e4e4e7]">Free</div>
-                <div class="text-[#9ca3af] text-xs">No subscription</div>
+                <div class="text-2xl font-bold text-[#e4e4e7]">$9.99</div>
+                <div class="text-[#9ca3af] text-xs">One-time</div>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ import { Component } from '@angular/core';
             </div>
             <!-- Floating badge -->
             <div class="absolute -bottom-4 -right-4 bg-[#6366f1] text-white rounded-xl px-4 py-2 text-sm font-medium shadow-lg">
-              macOS Native
+              macOS · Windows
             </div>
           </div>
         </div>
