@@ -103,7 +103,7 @@ public class App extends Application {
 
                 if (remaining > 0) {
                     var wait = new PauseTransition(Duration.seconds(remaining));
-                    wait.setOnFinished(_ -> fadeOutSplash(splashPane, blinkAnim, afterSplash));
+                    wait.setOnFinished(e -> fadeOutSplash(splashPane, blinkAnim, afterSplash));
                     wait.play();
                 } else {
                     fadeOutSplash(splashPane, blinkAnim, afterSplash);
@@ -173,9 +173,9 @@ public class App extends Application {
                 + "-fx-font-weight: bold; -fx-padding: 12 40; -fx-background-radius: 10; -fx-cursor: hand;");
         btnContinue.setDisable(true);
 
-        group.selectedToggleProperty().addListener((_, _, sel) -> btnContinue.setDisable(sel == null));
+        group.selectedToggleProperty().addListener((obs, old, sel) -> btnContinue.setDisable(sel == null));
 
-        btnContinue.setOnAction(_ -> {
+        btnContinue.setOnAction(e -> {
             var selected = group.getSelectedToggle();
             if (selected == null) return;
             Locale locale = (Locale) selected.getUserData();
@@ -185,7 +185,7 @@ public class App extends Application {
             var fadeOut = new FadeTransition(Duration.millis(400), picker);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(_ -> {
+            fadeOut.setOnFinished(ev -> {
                 rootStack.getChildren().remove(picker);
                 showMainApp();
             });
@@ -244,11 +244,11 @@ public class App extends Application {
         }
 
         var timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, _ -> logoView.setImage(eyesOpen)),
-                new KeyFrame(Duration.millis(1800), _ -> logoView.setImage(eyesClosed)),
-                new KeyFrame(Duration.millis(1950), _ -> logoView.setImage(eyesOpen)),
-                new KeyFrame(Duration.millis(2100), _ -> logoView.setImage(eyesClosed)),
-                new KeyFrame(Duration.millis(2250), _ -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.ZERO, e -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.millis(1800), e -> logoView.setImage(eyesClosed)),
+                new KeyFrame(Duration.millis(1950), e -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.millis(2100), e -> logoView.setImage(eyesClosed)),
+                new KeyFrame(Duration.millis(2250), e -> logoView.setImage(eyesOpen)),
                 new KeyFrame(Duration.millis(4000))
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -260,7 +260,7 @@ public class App extends Application {
         var fadeOut = new FadeTransition(Duration.millis(600), splash);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(_ -> {
+        fadeOut.setOnFinished(e -> {
             ((StackPane) splash.getParent()).getChildren().remove(splash);
             onFinished.run();
         });

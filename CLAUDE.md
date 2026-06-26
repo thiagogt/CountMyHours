@@ -74,10 +74,10 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 ## Packaging
 
 - `package-appstore-native.sh` builds a signed `.pkg` for App Store submission via GraalVM native image (Gluon GluonFX, JDK 21)
-  - Output: `target/appstore/CountMyHours-3.2.2.pkg` (~34MB)
+  - Output: `target/appstore/CountMyHours-3.2.4.pkg` (~34MB)
   - Signed with `3rd Party Mac Developer Application` + `Installer` certificates
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23, Zulu)
-  - Output: `target/installer/CountMyHours-3.2.2.dmg` (~52MB)
+  - Output: `target/installer/CountMyHours-3.2.4.dmg` (~52MB)
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions

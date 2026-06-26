@@ -6,7 +6,7 @@
 
   <groupId>com.countmyh</groupId>
   <artifactId>count-my-hours</artifactId>
-  <version>3.2.2</version>
+  <version>3.2.4</version>
 
   <name>count-my-hours</name>
   <description>JavaFX desktop app for tracking and visualizing worked hours per project</description>

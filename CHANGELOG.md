@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.4] - 2026-06-26
+
+### Fixed
+- **Welcome screen restored to first-time-only** — reverted 3.2.3 change; welcome/language picker now shows only when no locale is saved (first install), then goes directly to main app on all subsequent launches
+- Lambda parameters renamed from `_` to named variables (`e`, `ev`, `obs`) so code compiles cleanly without `--enable-preview` and is compatible with GraalVM native image
+
+## [3.2.3] - 2026-06-26
+
+### Added
+- **Welcome screen always shown on launch** — the language picker now appears on every startup (not just first run); the previously-saved locale is pre-selected and Continue is immediately enabled, so returning users just press one button
+- `--enable-preview` added to maven-compiler-plugin and maven-surefire-plugin so unnamed lambda parameters (`_`) compile and test cleanly with GraalVM JDK 21
+
 ## [3.2.2] - 2026-06-26
 
 ### Added

@@ -98,7 +98,7 @@ public class SettingsView {
         var btnApply = new Button(I18n.get("settings.language.apply"));
         btnApply.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24;");
 
-        btnApply.setOnAction(_ -> {
+        btnApply.setOnAction(e -> {
             var selected = group.getSelectedToggle();
             if (selected == null) return;
             Locale locale = (Locale) selected.getUserData();
@@ -150,7 +150,7 @@ public class SettingsView {
             cb.setSelected(!data.isProjectHidden(project));
             cb.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
 
-            cb.selectedProperty().addListener((_, _, isSelected) -> {
+            cb.selectedProperty().addListener((obs, old, isSelected) -> {
                 data.setProjectHidden(project, !isSelected);
                 try {
                     persistenceService.save(data);
@@ -191,7 +191,7 @@ public class SettingsView {
         var btnUninstall = new Button(I18n.get("settings.uninstall.button"));
         btnUninstall.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24;");
 
-        btnUninstall.setOnAction(_ -> handleUninstall());
+        btnUninstall.setOnAction(e -> handleUninstall());
 
         container.getChildren().addAll(sectionTitle, desc, pathLabel, btnUninstall);
         return container;

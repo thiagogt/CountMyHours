@@ -87,19 +87,19 @@ public class DataEntryView {
         sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var btnImport = new Button(I18n.get("data.import.csv"));
-        btnImport.setOnAction(_ -> handleImport());
+        btnImport.setOnAction(e -> handleImport());
 
         var btnNewSheet = new Button(I18n.get("data.new.spreadsheet"));
         btnNewSheet.setStyle("-fx-background-color: #10b981;");
-        btnNewSheet.setOnAction(_ -> handleNewSpreadsheet());
+        btnNewSheet.setOnAction(e -> handleNewSpreadsheet());
 
         var btnExportEdit = new Button(I18n.get("data.export.edit"));
         btnExportEdit.setStyle("-fx-background-color: #f59e0b;");
-        btnExportEdit.setOnAction(_ -> handleExportAndEdit());
+        btnExportEdit.setOnAction(e -> handleExportAndEdit());
 
         var btnReimport = new Button(I18n.get("data.reimport.last"));
         btnReimport.setStyle("-fx-background-color: #8b5cf6;");
-        btnReimport.setOnAction(_ -> handleReimportLast());
+        btnReimport.setOnAction(e -> handleReimportLast());
 
         var desc = new Label(I18n.get("data.import.desc"));
         desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-wrap-text: true;");
@@ -160,7 +160,7 @@ public class DataEntryView {
 
         var colActions = new TableColumn<ImportRecord, Void>(I18n.get("data.col.actions"));
         colActions.setPrefWidth(180);
-        colActions.setCellFactory(_ -> new TableCell<>() {
+        colActions.setCellFactory(e -> new TableCell<>() {
             private final Button btnExport = new Button(I18n.get("data.export"));
             private final Button btnDelete = new Button(I18n.get("data.delete"));
             private final HBox box = new HBox(8, btnExport, btnDelete);
@@ -170,12 +170,12 @@ public class DataEntryView {
                 btnDelete.setStyle("-fx-background-color: #ef4444; -fx-font-size: 11px; -fx-padding: 4 10;");
                 box.setAlignment(Pos.CENTER);
 
-                btnExport.setOnAction(_ -> {
+                btnExport.setOnAction(e -> {
                     ImportRecord record = getTableView().getItems().get(getIndex());
                     handleExportImportRecord(record);
                 });
 
-                btnDelete.setOnAction(_ -> {
+                btnDelete.setOnAction(e -> {
                     ImportRecord record = getTableView().getItems().get(getIndex());
                     handleDeleteImportRecord(record);
                 });
@@ -297,7 +297,7 @@ public class DataEntryView {
         } else {
             filterYear.setValue(allYears);
         }
-        filterYear.setOnAction(_ -> applyFilters());
+        filterYear.setOnAction(e -> applyFilters());
 
         filterProject = new ComboBox<>();
         filterProject.getItems().add(allProjects);
@@ -307,7 +307,7 @@ public class DataEntryView {
                 .sorted()
                 .forEach(p -> filterProject.getItems().add(p));
         filterProject.setValue(allProjects);
-        filterProject.setOnAction(_ -> applyFilters());
+        filterProject.setOnAction(e -> applyFilters());
 
         var box = new HBox(12,
                 new Label(I18n.get("data.filter.year")), filterYear,
