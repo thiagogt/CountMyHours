@@ -34,6 +34,7 @@ public class MainView {
     private DashboardView dashboardView;
     private TimelineView timelineView;
     private ExtraHoursView extraHoursView;
+    private ExtraBalanceView extraBalanceView;
     private HourSellingView hourSellingView;
     private DataEntryView dataEntryView;
     private SettingsView settingsView;
@@ -79,6 +80,7 @@ public class MainView {
         btnDashboard = createNavButton(I18n.get("nav.dashboard"), group);
         var btnTimeline = createNavButton(I18n.get("nav.timeline"), group);
         var btnExtra = createNavButton(I18n.get("nav.extra"), group);
+        var btnExtras = createNavButton(I18n.get("nav.extras"), group);
         var btnSelling = createNavButton(I18n.get("nav.selling"), group);
         var btnData = createNavButton(I18n.get("nav.data"), group);
 
@@ -87,6 +89,7 @@ public class MainView {
         btnDashboard.setOnAction(e -> showView("dashboard"));
         btnTimeline.setOnAction(e -> showView("timeline"));
         btnExtra.setOnAction(e -> showView("extra"));
+        btnExtras.setOnAction(e -> showView("extras"));
         btnSelling.setOnAction(e -> showView("selling"));
         btnData.setOnAction(e -> showView("data"));
         btnSettings.setOnAction(e -> showView("settings"));
@@ -94,7 +97,7 @@ public class MainView {
         var spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnSelling, btnData, spacer, btnSettings);
+        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnExtras, btnSelling, btnData, spacer, btnSettings);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
         sidebar.setMinWidth(200);
@@ -124,6 +127,7 @@ public class MainView {
             case "dashboard" -> getDashboardView();
             case "timeline" -> getTimelineView();
             case "extra" -> getExtraHoursView();
+            case "extras" -> getExtraBalanceView();
             case "selling" -> getHourSellingView();
             case "data" -> getDataEntryView();
             case "settings" -> getSettingsView();
@@ -145,6 +149,11 @@ public class MainView {
     private Node getExtraHoursView() {
         extraHoursView = new ExtraHoursView(data, calcService, businessDayService, persistenceService);
         return extraHoursView.getRoot();
+    }
+
+    private Node getExtraBalanceView() {
+        extraBalanceView = new ExtraBalanceView(data, calcService);
+        return extraBalanceView.getRoot();
     }
 
     private Node getHourSellingView() {

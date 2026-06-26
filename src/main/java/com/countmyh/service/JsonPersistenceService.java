@@ -36,7 +36,11 @@ public class JsonPersistenceService {
 
         Path tempFile = dataFilePath.resolveSibling(dataFilePath.getFileName() + ".tmp");
         mapper.writeValue(tempFile.toFile(), data);
-        Files.move(tempFile, dataFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        try {
+            Files.move(tempFile, dataFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.FileSystemException e) {
+            Files.move(tempFile, dataFilePath, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     public WorkPeriodTracker load() throws IOException {

@@ -4,9 +4,9 @@
 
 Pure Java desktop app (no Spring Boot). Three-layer structure:
 
-- **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
+- **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `MonthSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
 - **service/** — Business logic: import, persistence, calculations, business day calendar
-- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), HourSelling, DataEntry, Settings
+- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), ExtraBalance (Extras), HourSelling, DataEntry, Settings
 - **util/** — Chart styling, color palette, month names, i18n, toast notifications
 
 No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `--add-modules`.
@@ -40,7 +40,7 @@ Data;Cliente;Projeto;Item;Hs
 - On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.
 - Splash screen with eye-blinking logo animation (4s minimum), data loads in background thread.
 - Year filters in Dashboard and Data views are dynamic (derived from actual data years) and default to the current year or the most recent year in the data.
-- `CalculationService` — Monthly/yearly aggregation, extra hours (worked - expected with vacation/holiday adjustments), proportional sold-hours attribution across projects, project summaries. Uses `getVisibleEntries()` to respect hidden projects.
+- `CalculationService` — Monthly/yearly aggregation, extra hours (worked - expected with vacation/holiday adjustments), proportional sold-hours attribution across projects, project summaries. Uses `getVisibleEntries()` to respect hidden projects. Key result types: `MonthlyBalance`, `YearlyBalance` (worked, gross, sold, vacationSold, net, note), `ProjectExtra` (totalHours, grossExtra, sold, net, pct, yearlyBreakdown).
 
 ## Data Entry Features
 
@@ -52,6 +52,7 @@ Data;Cliente;Projeto;Item;Hs
 - **Erase All Data**: clears all entries, hour sellings, and import history with confirmation dialog. Calls `WorkPeriodTracker.clearAll()`.
 - **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
 - **Month Balance view** (`ExtraHoursView`): monthly cards with worked/expected/extra/accumulated hours. Editable vacation days and holiday count (double spinners with 0.5 step for half-days), holiday observation text field (auto-filled from Brazilian calendar). Custom holidays adjust expected hours. All persisted to data.json.
+- **Extras view** (`ExtraBalanceView`): two-section analytical view. Section 1: yearly balance `BarChart<String,Number>` with three series — gross extras (indigo), hours sold (orange, negative), net balance (green/red per bar, colored via post-render). Section 2: per-project horizontal `BarChart<Number,String>` (gross vs sold), a `StackedBarChart<String,Number>` with per-project series stacked per year, and a `TableView` with worked/gross/sold/net columns (cells color-coded). All data from `CalculationService.getYearlyBalance()` and `getExtraPerProject()`.
 - **Hour Selling view** (`HourSellingView`): toggle between Monthly and Yearly mode. Monthly mode shows one card per month with a spinner for hours sold that month (stored as `MonthSelling`). Yearly mode shows one card per year with spinners for hoursSold and vacationDaysSold, plus a note field (stored as `WorkHourSelling`). Both modes have a year filter row. Cards display worked hours as context.
 - **Settings view** (`SettingsView`): language selector (English/pt-BR, rebuilds UI on apply), project management (toggle visibility per project — hidden projects excluded from all charts/calculations), and uninstall (deletes `~/.countmyhours/`, closes app). Pinned at sidebar bottom.
 - Each imported entry is tagged with `sourceFile` for traceability
@@ -71,9 +72,11 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 
 ## Packaging
 
-- `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23)
-- Bundles JDK runtime + JavaFX + all dependencies (~52MB)
-- Output: `target/installer/CountMyHours-3.0.2.dmg`
+- `package-appstore-native.sh` builds a signed `.pkg` for App Store submission via GraalVM native image (Gluon GluonFX, JDK 21)
+  - Output: `target/appstore/CountMyHours-3.1.1.pkg` (~34MB)
+  - Signed with `3rd Party Mac Developer Application` + `Installer` certificates
+- `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23, Zulu)
+  - Output: `target/installer/CountMyHours-3.1.1.dmg` (~52MB)
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions
@@ -86,3 +89,14 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 - Chart colors applied post-render via `Platform.runLater()` node lookup
 - i18n via `I18n` utility + `ResourceBundle` at `resources/com/countmyh/i18n/messages[_locale].properties` (en default + pt_BR)
 - Every code change must update unit tests, README.md, and CLAUDE.md if affected
+
+## Before Every Package or Release
+
+**Always do these steps before running any packaging script or publishing a test build:**
+
+1. Bump version in `pom.xml`, `package-appstore-native.sh`, and `package-macos.sh`
+2. Add a `[X.Y.Z] - YYYY-MM-DD` entry to `CHANGELOG.md` describing all changes since the last release
+3. Update `README.md` if any features, setup steps, or packaging info changed
+4. Update `CLAUDE.md` if any architecture, models, services, views, or conventions changed
+
+Never run `./package-appstore-native.sh` or `./package-macos.sh` without completing all four steps first.

@@ -45,19 +45,17 @@ XLSX files with the same column structure are also supported.
 ## Features
 
 - Import work hours from CSV/XLSX files
-- Import legacy spreadsheet data (pre-aggregated monthly format, 2017-2025)
 - **Spreadsheet mode**: create a template CSV and open in Numbers/Excel, then reimport
 - **Import history**: list of all imported files with Export and Delete per file
-- Month Balance view with editable vacation days, holidays (half-day support), and observations per month
-- Auto-calculate expected monthly hours based on Brazilian business days
-- Dashboard with stats cards and stacked bar chart (filterable by year range)
-- Project timeline and yearly totals
-- Extra hours tracking: gross extras, hours sold, net balance
-- Per-project extra hours breakdown with proportional sold-hours attribution
-- **Hour Selling view**: record sold hours per month or per year with spinners; yearly mode also tracks vacation days sold and a note
-- Internationalization (i18n) support — English and Portuguese (pt-BR)
+- **Dashboard**: stats cards (total hours, projects, monthly average, gross extras, hours sold, net balance) and stacked bar chart filterable by year
+- **Timeline**: project Gantt chart, yearly totals bar chart, and project summary table
+- **Month Balance**: monthly cards with worked/expected/extra/accumulated hours; editable vacation days and holidays (half-day support) with Brazilian calendar auto-fill
+- **Extras**: analytical view with yearly balance chart (gross / sold / net), per-project horizontal bar chart, per-project stacked yearly chart, and summary table — all using proportional sold-hours attribution
+- **Hour Selling**: record sold hours per month or per year with spinners; yearly mode also tracks vacation days sold and a note
+- Auto-calculate expected monthly hours based on Brazilian business days (national + São Paulo state holiday)
+- Internationalization (i18n) — English and Portuguese (pt-BR)
 - Splash screen with animated blinking clock logo
 - Sample data auto-loaded on first launch (Disney-themed example entries)
-- Settings view with language selector, project visibility management, and uninstall
+- Settings: language selector, project visibility toggle, and full uninstall
 - Dark theme UI
-- macOS `.dmg` installer (`./package-macos.sh`)
+- macOS App Store package via GraalVM native image (`./package-appstore-native.sh`)

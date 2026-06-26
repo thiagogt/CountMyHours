@@ -4,9 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.1.1] - 2026-06-25
+
+### Fixed
+- **Save error on delete/import** — "Operation not permitted" when deleting an import file or erasing all data. Root cause: `StandardCopyOption.ATOMIC_MOVE` in `JsonPersistenceService` uses a `renameat()` variant blocked by the macOS App Store sandbox. Fix: try atomic move first and fall back to a regular `REPLACE_EXISTING` move on `FileSystemException`, which uses plain `rename()` and is permitted in the sandbox.
+
+## [3.1.0] - 2026-06-25
+
+### Added
+- **Extras view** — analytical breakdown of extra hours with two charts and a summary table (moved from 3.0.2 scope)
+
+### Changed
+- Version bump to 3.1.0 for App Store submission
+
 ## [3.0.2] - 2026-06-25
 
 ### Added
+- **Extras view** — analytical breakdown of extra hours with two charts and a table
+  - Yearly Balance chart: grouped bars for gross extras (indigo), hours sold (orange, negative), and net balance (green/red per bar)
+  - Per-Project horizontal bar chart: gross extras vs sold hours attributed proportionally per project
+  - Per-Project stacked bar chart: extra hours broken down by project per year
+  - Summary table: worked, gross extras, sold, and net per project with color-coded cells
 - **Hour Selling view** — new sidebar section to record sold hours per month or per year
   - Monthly mode: one card per month with a "Sold" spinner; stored as `MonthSelling` (year + month + hoursSold)
   - Yearly mode: one card per year with spinners for hours sold and vacation days sold, plus a note field; stored in `WorkHourSelling`
@@ -14,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `MonthSelling` model record (year, month, hoursSold) for month-level sold-hours tracking
 - `WorkPeriodTracker.setYearlySelling()` — upsert helper replacing append-only `addHourSelling` for edits
 - `WorkPeriodTracker.getYearlySelling(year)` — lookup helper for yearly selling
+- `WorkPeriodTracker.setMonthSelling()` / `getMonthSelling()` — upsert and lookup for monthly sold hours
+- `WorkPeriodTracker.clearAll()` now also clears `monthSellings`
 
 ## [2.2.0] - 2026-06-23
 
