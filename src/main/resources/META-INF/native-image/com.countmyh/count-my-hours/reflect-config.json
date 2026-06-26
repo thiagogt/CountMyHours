@@ -36,6 +36,12 @@
     "allDeclaredFields": true
   },
   {
+    "name": "com.countmyh.model.MonthSelling",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
     "name": "com.fasterxml.jackson.databind.ObjectMapper",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true

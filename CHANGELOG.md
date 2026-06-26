@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.7] - 2026-06-26
+
+### Fixed
+- **MonthSelling serialization in native image** — added `com.countmyh.model.MonthSelling` to `reflect-config.json`. In GraalVM native image, Jackson requires explicit reflection registration for every model class; `MonthSelling` was introduced in 3.0.2 but never registered, causing a "No serializer found" save error whenever any monthly sold-hours data was present.
+
 ## [3.2.6] - 2026-06-26
 
 ### Added
