@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.6] - 2026-06-26
+
+### Added
+- **Import format warning modal** — a dark-themed dialog appears before each CSV import explaining that the expected date format is `dd/MM/yyyy` with an example. Includes a "Don't show this again" checkbox; dismissed state stored as `~/.countmyhours/import_warning_dismissed`.
+
+### Changed
+- **Date format fixed to `dd/MM/yyyy`** — removed locale-specific date format system (`CalendarConfig`, `calendar_*.properties` files). CSV import, export, and date display always use `dd/MM/yyyy`.
+- Total tests: 124 → 115 (9 CalendarConfig tests removed)
+
+## [3.2.5] - 2026-06-26
+
+### Fixed
+- **Sandbox persistence** — replaced `System.getProperty("user.home")` with `System.getenv("HOME")` (fallback to system property) via new `AppDirs` utility. In GraalVM native images, `System.getProperty("user.home")` calls `getpwuid()` and returns the real home directory, which the macOS App Store sandbox blocks. `HOME` env var is correctly set by macOS to the container path, so save/load and locale file now work inside the sandbox.
+
 ## [3.2.4] - 2026-06-26
 
 ### Fixed

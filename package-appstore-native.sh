@@ -9,7 +9,7 @@ ENTITLEMENTS_CHILD="$PROJECT_DIR/entitlements-child.plist"
 PROVISION_PROFILE="$PROJECT_DIR/CountMyHours.provisionprofile"
 
 APP_NAME="CountMyHours"
-APP_VERSION="3.2.4"
+APP_VERSION="3.2.6"
 BUNDLE_ID="com.countmyh.CountMyHours"
 
 SIGN_APP="3rd Party Mac Developer Application: THIAGO TOLEDO (3TJGYWF79B)"
@@ -20,6 +20,14 @@ GLUON_APP="$TARGET_DIR/gluonfx/aarch64-darwin/count-my-hours.app"
 APP_BUNDLE="$TARGET_DIR/appstore/$APP_NAME.app"
 
 NATIVE_BIN="$TARGET_DIR/gluonfx/aarch64-darwin/count-my-hours"
+
+echo "=== Unlocking previous signed bundle (if any) ==="
+if [ -d "$TARGET_DIR/appstore" ]; then
+  xattr -cr "$TARGET_DIR/appstore" 2>/dev/null || true
+  chflags -R nouchg "$TARGET_DIR/appstore" 2>/dev/null || true
+  chmod -R u+w "$TARGET_DIR/appstore" 2>/dev/null || true
+  rm -rf "$TARGET_DIR/appstore" 2>/dev/null || true
+fi
 
 echo "=== Building native image ==="
 JAVA_HOME="$GRAALVM_HOME" GRAALVM_HOME="$GRAALVM_HOME" mvn clean gluonfx:build -q

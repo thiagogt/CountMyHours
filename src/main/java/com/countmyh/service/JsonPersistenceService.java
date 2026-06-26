@@ -1,6 +1,7 @@
 package com.countmyh.service;
 
 import com.countmyh.model.WorkPeriodTracker;
+import com.countmyh.util.AppDirs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -13,14 +14,13 @@ import java.nio.file.StandardCopyOption;
 
 public class JsonPersistenceService {
 
-    private static final String DEFAULT_DIR = System.getProperty("user.home") + "/.countmyhours";
     private static final String DEFAULT_FILE = "data.json";
 
     private final ObjectMapper mapper;
     private final Path dataFilePath;
 
     public JsonPersistenceService() {
-        this(Path.of(DEFAULT_DIR, DEFAULT_FILE));
+        this(AppDirs.DATA_DIR.resolve(DEFAULT_FILE));
     }
 
     public JsonPersistenceService(Path dataFilePath) {

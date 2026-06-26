@@ -1,8 +1,6 @@
 package com.countmyh.service;
 
 import com.countmyh.model.WorkHourItem;
-import com.countmyh.util.I18n;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -13,28 +11,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CsvImportServiceTest {
 
     private CsvImportService service;
-    private Locale originalLocale;
 
     @TempDir
     Path tempDir;
 
     @BeforeEach
     void setUp() {
-        originalLocale = I18n.getLocale();
-        I18n.setLocale(Locale.of("pt", "BR"));
         service = new CsvImportService();
-    }
-
-    @AfterEach
-    void tearDown() {
-        I18n.setLocale(originalLocale);
     }
 
     @Test

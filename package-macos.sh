@@ -8,8 +8,8 @@ TARGET_DIR="$PROJECT_DIR/target"
 ICON="$PROJECT_DIR/src/main/resources/com/countmyh/CountMyHours.icns"
 
 APP_NAME="CountMyHours"
-APP_VERSION="3.2.4"
-MAIN_JAR="count-my-hours-3.2.4.jar"
+APP_VERSION="3.2.6"
+MAIN_JAR="count-my-hours-3.2.6.jar"
 MAIN_CLASS="com.countmyh.App"
 VENDOR="countmyh"
 

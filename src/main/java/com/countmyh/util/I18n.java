@@ -9,7 +9,7 @@ import java.util.ResourceBundle;
 
 public final class I18n {
 
-    private static final Path PREFS_DIR = Path.of(System.getProperty("user.home"), ".countmyhours");
+    private static final Path PREFS_DIR = AppDirs.DATA_DIR;
     private static final Path LOCALE_FILE = PREFS_DIR.resolve("locale");
 
     private static ResourceBundle bundle;

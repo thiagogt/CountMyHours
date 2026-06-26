@@ -36,7 +36,8 @@ Data;Cliente;Projeto;Item;Hs
 
 - `BusinessDayService` — Brazilian national holidays (fixed + Easter-based moveable) + São Paulo state holiday (Jul 9). Calculates working days per month, expected hours = business days × 8. `getHolidaysInMonth()` returns named holidays on weekdays. `getNamedHolidays()` returns all holidays with names.
 - `CsvImportService` — Parses CSV (`;` delimiter only, validates format on import) and XLSX. Project names are lowercased on import. Format validation with descriptive error messages (wrong delimiter, missing columns, wrong headers).
-- `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename (falls back to regular rename on sandbox FileSystemException).
+- `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json` (path from `AppDirs.DATA_DIR`). Atomic write via temp file + rename (falls back to regular rename on sandbox FileSystemException).
+- `AppDirs` utility (`util/`) — resolves `~/.countmyhours` using `System.getenv("HOME")` with fallback to `System.getProperty("user.home")`. GraalVM native images call `getpwuid()` for `user.home` which returns the real home directory; the App Store sandbox blocks writes there. `HOME` env var is correctly set to the container path by macOS.
 - `HolidayCalendar` / `HolidayCalendarLoader` / `HolidayCalendarFactory` — data-driven holiday system. Each locale has a `resources/com/countmyh/holidays/holidays_<locale>.properties` file with `YYYY-MM-DD=Name` entries for 2017–2027. `BusinessDayService` calls `HolidayCalendarFactory.forLocale(I18n.getLocale().toLanguageTag())` dynamically so switching language in Settings immediately updates the holiday calendar.
 - On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.
 - Splash screen with eye-blinking logo animation (4s minimum), data loads in background thread.
@@ -74,10 +75,10 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 ## Packaging
 
 - `package-appstore-native.sh` builds a signed `.pkg` for App Store submission via GraalVM native image (Gluon GluonFX, JDK 21)
-  - Output: `target/appstore/CountMyHours-3.2.4.pkg` (~34MB)
+  - Output: `target/appstore/CountMyHours-3.2.6.pkg` (~34MB)
   - Signed with `3rd Party Mac Developer Application` + `Installer` certificates
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23, Zulu)
-  - Output: `target/installer/CountMyHours-3.2.4.dmg` (~52MB)
+  - Output: `target/installer/CountMyHours-3.2.6.dmg` (~52MB)
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions

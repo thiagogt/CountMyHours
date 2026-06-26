@@ -5,7 +5,7 @@ import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
-import com.countmyh.service.calendar.CalendarConfig;
+import com.countmyh.util.AppDirs;
 import com.countmyh.util.I18n;
 import com.countmyh.util.Toast;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -17,7 +17,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
@@ -32,6 +34,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +52,7 @@ public class DataEntryView {
     private final StackPane rootStack;
 
     private static final String CSV_HEADER = "Data;Cliente;Projeto;Item;Hs";
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private TableView<WorkHourItem> table;
     private TableView<ImportRecord> importHistoryTable;
@@ -267,7 +271,7 @@ public class DataEntryView {
         try (var writer = new FileWriter(file)) {
             writer.write(CSV_HEADER + "\n");
             for (var entry : items) {
-                writer.write(entry.date().format(CalendarConfig.getDateFormatter())
+                writer.write(entry.date().format(DATE_FMT)
                         + ";" + entry.client()
                         + ";" + entry.project()
                         + ";" + entry.item()
@@ -324,7 +328,7 @@ public class DataEntryView {
 
         var colDate = new TableColumn<WorkHourItem, String>(I18n.get("data.col.date"));
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
-                cd.getValue().date().format(CalendarConfig.getDateFormatter())
+                cd.getValue().date().format(DATE_FMT)
         ));
         colDate.setMinWidth(100);
 
@@ -366,7 +370,41 @@ public class DataEntryView {
         table.getItems().setAll(filtered);
     }
 
+    private void showImportFormatWarning() {
+        if (Files.exists(AppDirs.DATA_DIR.resolve("import_warning_dismissed"))) return;
+
+        var msgLabel = new Label(I18n.get("import.warning.message"));
+        msgLabel.setWrapText(true);
+        msgLabel.setMaxWidth(380);
+        msgLabel.setStyle("-fx-text-fill: #e4e4e7; -fx-font-size: 13px;");
+
+        var neverAgain = new CheckBox(I18n.get("import.warning.never.again"));
+        neverAgain.setStyle("-fx-text-fill: #8b8d97;");
+
+        var box = new VBox(16, msgLabel, neverAgain);
+        box.setPadding(new Insets(4, 0, 4, 0));
+
+        var dialog = new Dialog<ButtonType>();
+        dialog.setTitle(I18n.get("import.warning.title"));
+        dialog.getDialogPane().setContent(box);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().setPrefWidth(440);
+        dialog.getDialogPane().setStyle("-fx-background-color: #1a1d27;");
+        var css = getClass().getResource("/com/countmyh/dark-theme.css");
+        if (css != null) dialog.getDialogPane().getStylesheets().add(css.toExternalForm());
+
+        dialog.showAndWait();
+
+        if (neverAgain.isSelected()) {
+            try {
+                Files.createDirectories(AppDirs.DATA_DIR);
+                Files.createFile(AppDirs.DATA_DIR.resolve("import_warning_dismissed"));
+            } catch (IOException ignored) {}
+        }
+    }
+
     private void handleImport() {
+        showImportFormatWarning();
         var fileChooser = new FileChooser();
         fileChooser.setTitle(I18n.get("data.import.work.hours"));
         fileChooser.getExtensionFilters().add(
@@ -526,7 +564,7 @@ public class DataEntryView {
     private void writeCsvTemplate(File file) throws IOException {
         try (var writer = new FileWriter(file)) {
             writer.write(CSV_HEADER + "\n");
-            String today = LocalDate.now().format(CalendarConfig.getDateFormatter());
+            String today = LocalDate.now().format(DATE_FMT);
             writer.write(today + ";Client;Project;Task description;8\n");
         }
     }

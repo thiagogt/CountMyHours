@@ -3,6 +3,7 @@ package com.countmyh.view;
 import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.util.AppDirs;
 import com.countmyh.util.ColorPalette;
 import com.countmyh.util.I18n;
 import javafx.application.Platform;
@@ -30,7 +31,7 @@ import java.util.Locale;
 
 public class SettingsView {
 
-    private static final Path DATA_DIR = Path.of(System.getProperty("user.home"), ".countmyhours");
+    private static final Path DATA_DIR = AppDirs.DATA_DIR;
 
     private final WorkPeriodTracker data;
     private final JsonPersistenceService persistenceService;
