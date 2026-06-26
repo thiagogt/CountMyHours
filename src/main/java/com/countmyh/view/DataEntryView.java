@@ -5,6 +5,7 @@ import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CsvImportService;
 import com.countmyh.service.JsonPersistenceService;
+import com.countmyh.service.calendar.CalendarConfig;
 import com.countmyh.util.I18n;
 import com.countmyh.util.Toast;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -48,7 +49,6 @@ public class DataEntryView {
     private final StackPane rootStack;
 
     private static final String CSV_HEADER = "Data;Cliente;Projeto;Item;Hs";
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private TableView<WorkHourItem> table;
     private TableView<ImportRecord> importHistoryTable;
@@ -87,19 +87,19 @@ public class DataEntryView {
         sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
 
         var btnImport = new Button(I18n.get("data.import.csv"));
-        btnImport.setOnAction(e -> handleImport());
+        btnImport.setOnAction(_ -> handleImport());
 
         var btnNewSheet = new Button(I18n.get("data.new.spreadsheet"));
         btnNewSheet.setStyle("-fx-background-color: #10b981;");
-        btnNewSheet.setOnAction(e -> handleNewSpreadsheet());
+        btnNewSheet.setOnAction(_ -> handleNewSpreadsheet());
 
         var btnExportEdit = new Button(I18n.get("data.export.edit"));
         btnExportEdit.setStyle("-fx-background-color: #f59e0b;");
-        btnExportEdit.setOnAction(e -> handleExportAndEdit());
+        btnExportEdit.setOnAction(_ -> handleExportAndEdit());
 
         var btnReimport = new Button(I18n.get("data.reimport.last"));
         btnReimport.setStyle("-fx-background-color: #8b5cf6;");
-        btnReimport.setOnAction(e -> handleReimportLast());
+        btnReimport.setOnAction(_ -> handleReimportLast());
 
         var desc = new Label(I18n.get("data.import.desc"));
         desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px; -fx-wrap-text: true;");
@@ -160,7 +160,7 @@ public class DataEntryView {
 
         var colActions = new TableColumn<ImportRecord, Void>(I18n.get("data.col.actions"));
         colActions.setPrefWidth(180);
-        colActions.setCellFactory(col -> new TableCell<>() {
+        colActions.setCellFactory(_ -> new TableCell<>() {
             private final Button btnExport = new Button(I18n.get("data.export"));
             private final Button btnDelete = new Button(I18n.get("data.delete"));
             private final HBox box = new HBox(8, btnExport, btnDelete);
@@ -170,12 +170,12 @@ public class DataEntryView {
                 btnDelete.setStyle("-fx-background-color: #ef4444; -fx-font-size: 11px; -fx-padding: 4 10;");
                 box.setAlignment(Pos.CENTER);
 
-                btnExport.setOnAction(e -> {
+                btnExport.setOnAction(_ -> {
                     ImportRecord record = getTableView().getItems().get(getIndex());
                     handleExportImportRecord(record);
                 });
 
-                btnDelete.setOnAction(e -> {
+                btnDelete.setOnAction(_ -> {
                     ImportRecord record = getTableView().getItems().get(getIndex());
                     handleDeleteImportRecord(record);
                 });
@@ -267,7 +267,7 @@ public class DataEntryView {
         try (var writer = new FileWriter(file)) {
             writer.write(CSV_HEADER + "\n");
             for (var entry : items) {
-                writer.write(entry.date().format(DATE_FMT)
+                writer.write(entry.date().format(CalendarConfig.getDateFormatter())
                         + ";" + entry.client()
                         + ";" + entry.project()
                         + ";" + entry.item()
@@ -297,7 +297,7 @@ public class DataEntryView {
         } else {
             filterYear.setValue(allYears);
         }
-        filterYear.setOnAction(e -> applyFilters());
+        filterYear.setOnAction(_ -> applyFilters());
 
         filterProject = new ComboBox<>();
         filterProject.getItems().add(allProjects);
@@ -307,7 +307,7 @@ public class DataEntryView {
                 .sorted()
                 .forEach(p -> filterProject.getItems().add(p));
         filterProject.setValue(allProjects);
-        filterProject.setOnAction(e -> applyFilters());
+        filterProject.setOnAction(_ -> applyFilters());
 
         var box = new HBox(12,
                 new Label(I18n.get("data.filter.year")), filterYear,
@@ -324,7 +324,7 @@ public class DataEntryView {
 
         var colDate = new TableColumn<WorkHourItem, String>(I18n.get("data.col.date"));
         colDate.setCellValueFactory(cd -> new SimpleStringProperty(
-                cd.getValue().date().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                cd.getValue().date().format(CalendarConfig.getDateFormatter())
         ));
         colDate.setMinWidth(100);
 
@@ -526,7 +526,7 @@ public class DataEntryView {
     private void writeCsvTemplate(File file) throws IOException {
         try (var writer = new FileWriter(file)) {
             writer.write(CSV_HEADER + "\n");
-            String today = LocalDate.now().format(DATE_FMT);
+            String today = LocalDate.now().format(CalendarConfig.getDateFormatter());
             writer.write(today + ";Client;Project;Task description;8\n");
         }
     }

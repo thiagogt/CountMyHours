@@ -1,20 +1,18 @@
 package com.countmyh.service;
 
 import com.countmyh.model.WorkHourItem;
+import com.countmyh.service.calendar.CalendarConfig;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CsvImportService {
-
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String CSV_DELIMITER = ";";
 
     public List<WorkHourItem> importFile(File file) throws IOException {
@@ -94,7 +92,7 @@ public class CsvImportService {
         }
 
         try {
-            LocalDate date = LocalDate.parse(parts[0].trim(), DATE_FORMAT);
+            LocalDate date = LocalDate.parse(parts[0].trim(), CalendarConfig.getDateFormatter());
             String client = parts[1].trim();
             String project = parts[2].trim().toLowerCase();
             String item = parts[3].trim();
