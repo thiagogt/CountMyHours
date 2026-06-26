@@ -1,5 +1,6 @@
 package com.countmyh.view;
 
+import com.countmyh.model.WorkHourItem;
 import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.JsonPersistenceService;
 import com.countmyh.util.ColorPalette;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 public class SettingsView {
@@ -62,40 +64,51 @@ public class SettingsView {
         var desc = new Label(I18n.get("settings.language.desc"));
         desc.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 12px;");
 
+        record LangOption(String label, Locale locale) {}
+        var options = List.of(
+            new LangOption("Português (BR)",    Locale.of("pt", "BR")),
+            new LangOption("English (US)",      Locale.of("en", "US")),
+            new LangOption("English (UK)",      Locale.of("en", "GB")),
+            new LangOption("English (Canada)",  Locale.of("en", "CA")),
+            new LangOption("中文 (CN)",          Locale.of("zh", "CN")),
+            new LangOption("हिन्दी (India)",      Locale.of("hi", "IN")),
+            new LangOption("日本語 (JP)",         Locale.of("ja", "JP")),
+            new LangOption("Italiano (IT)",     Locale.of("it", "IT")),
+            new LangOption("Español (ES)",      Locale.of("es", "ES"))
+        );
+
         var group = new ToggleGroup();
+        var flowPane = new javafx.scene.layout.FlowPane(8, 8);
 
-        var btnEn = new ToggleButton("English");
-        btnEn.getStyleClass().add("filter-button");
-        btnEn.setToggleGroup(group);
-        btnEn.setStyle("-fx-font-size: 13px; -fx-padding: 8 24;");
-
-        var btnPt = new ToggleButton("Português (BR)");
-        btnPt.getStyleClass().add("filter-button");
-        btnPt.setToggleGroup(group);
-        btnPt.setStyle("-fx-font-size: 13px; -fx-padding: 8 24;");
-
-        String currentLang = I18n.getLocale().getLanguage();
-        if ("pt".equals(currentLang)) {
-            btnPt.setSelected(true);
-        } else {
-            btnEn.setSelected(true);
+        String currentTag = I18n.getLocale().toLanguageTag();
+        for (var opt : options) {
+            var btn = new ToggleButton(opt.label());
+            btn.getStyleClass().add("filter-button");
+            btn.setToggleGroup(group);
+            btn.setStyle("-fx-font-size: 12px; -fx-padding: 7 16;");
+            btn.setUserData(opt.locale());
+            if (opt.locale().toLanguageTag().equals(currentTag)
+                    || (currentTag.startsWith("en") && opt.locale().equals(Locale.of("en","US"))
+                        && !currentTag.equals("en-GB") && !currentTag.equals("en-CA"))) {
+                btn.setSelected(true);
+            }
+            flowPane.getChildren().add(btn);
         }
 
         var btnApply = new Button(I18n.get("settings.language.apply"));
         btnApply.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24;");
 
-        btnApply.setOnAction(e -> {
-            Locale locale = btnPt.isSelected() ? Locale.of("pt", "BR") : Locale.ENGLISH;
-            if (!locale.equals(I18n.getLocale())) {
+        btnApply.setOnAction(_ -> {
+            var selected = group.getSelectedToggle();
+            if (selected == null) return;
+            Locale locale = (Locale) selected.getUserData();
+            if (!locale.toLanguageTag().equals(I18n.getLocale().toLanguageTag())) {
                 I18n.setLocale(locale);
                 onLanguageChanged.run();
             }
         });
 
-        var buttons = new HBox(12, btnEn, btnPt);
-        buttons.setAlignment(Pos.CENTER_LEFT);
-
-        container.getChildren().addAll(sectionTitle, desc, buttons, btnApply);
+        container.getChildren().addAll(sectionTitle, desc, flowPane, btnApply);
         return container;
     }
 
@@ -114,7 +127,7 @@ public class SettingsView {
         projectList.setPadding(new Insets(4, 0, 0, 0));
 
         var projects = data.getEntries().stream()
-                .map(e -> e.project())
+                .map(WorkHourItem::project)
                 .distinct()
                 .sorted()
                 .toList();
@@ -128,7 +141,7 @@ public class SettingsView {
 
             long hours = Math.round(data.getEntries().stream()
                     .filter(e -> e.project().equals(project))
-                    .mapToDouble(e -> e.hours())
+                    .mapToDouble(WorkHourItem::hours)
                     .sum());
             var hoursLabel = new Label(hours + "h");
             hoursLabel.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
@@ -137,7 +150,7 @@ public class SettingsView {
             cb.setSelected(!data.isProjectHidden(project));
             cb.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
 
-            cb.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            cb.selectedProperty().addListener((_, _, isSelected) -> {
                 data.setProjectHidden(project, !isSelected);
                 try {
                     persistenceService.save(data);
@@ -178,7 +191,7 @@ public class SettingsView {
         var btnUninstall = new Button(I18n.get("settings.uninstall.button"));
         btnUninstall.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24;");
 
-        btnUninstall.setOnAction(e -> handleUninstall());
+        btnUninstall.setOnAction(_ -> handleUninstall());
 
         container.getChildren().addAll(sectionTitle, desc, pathLabel, btnUninstall);
         return container;

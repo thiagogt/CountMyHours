@@ -36,7 +36,8 @@ Data;Cliente;Projeto;Item;Hs
 
 - `BusinessDayService` — Brazilian national holidays (fixed + Easter-based moveable) + São Paulo state holiday (Jul 9). Calculates working days per month, expected hours = business days × 8. `getHolidaysInMonth()` returns named holidays on weekdays. `getNamedHolidays()` returns all holidays with names.
 - `CsvImportService` — Parses CSV (`;` delimiter only, validates format on import) and XLSX. Project names are lowercased on import. Format validation with descriptive error messages (wrong delimiter, missing columns, wrong headers).
-- `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename.
+- `JsonPersistenceService` — Jackson ObjectMapper with JavaTimeModule. Stores at `~/.countmyhours/data.json`. Atomic write via temp file + rename (falls back to regular rename on sandbox FileSystemException).
+- `HolidayCalendar` / `HolidayCalendarLoader` / `HolidayCalendarFactory` — data-driven holiday system. Each locale has a `resources/com/countmyh/holidays/holidays_<locale>.properties` file with `YYYY-MM-DD=Name` entries for 2017–2027. `BusinessDayService` calls `HolidayCalendarFactory.forLocale(I18n.getLocale().toLanguageTag())` dynamically so switching language in Settings immediately updates the holiday calendar.
 - On first load (empty data), `App.java` auto-imports bundled `sample-data.csv` from classpath resources.
 - Splash screen with eye-blinking logo animation (4s minimum), data loads in background thread.
 - Year filters in Dashboard and Data views are dynamic (derived from actual data years) and default to the current year or the most recent year in the data.
@@ -73,10 +74,10 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 ## Packaging
 
 - `package-appstore-native.sh` builds a signed `.pkg` for App Store submission via GraalVM native image (Gluon GluonFX, JDK 21)
-  - Output: `target/appstore/CountMyHours-3.1.1.pkg` (~34MB)
+  - Output: `target/appstore/CountMyHours-3.2.2.pkg` (~34MB)
   - Signed with `3rd Party Mac Developer Application` + `Installer` certificates
 - `package-macos.sh` builds a `.dmg` installer via `jpackage` (JDK 23, Zulu)
-  - Output: `target/installer/CountMyHours-3.1.1.dmg` (~52MB)
+  - Output: `target/installer/CountMyHours-3.2.2.dmg` (~52MB)
 - Logo: smiling clock with transparent background (`logo.svg` / `logo.png` / `logo-blink.png` / `CountMyHours.icns`)
 
 ## Conventions
@@ -87,7 +88,9 @@ CSS at `src/main/resources/com/countmyh/dark-theme.css`. Colors: bg `#0f1117`, c
 - No Spring Boot, no FXML, no module-info.java
 - Programmatic JavaFX UI construction
 - Chart colors applied post-render via `Platform.runLater()` node lookup
-- i18n via `I18n` utility + `ResourceBundle` at `resources/com/countmyh/i18n/messages[_locale].properties` (en default + pt_BR)
+- i18n via `I18n` utility + `ResourceBundle` at `resources/com/countmyh/i18n/messages[_locale].properties` (en default + pt_BR + it_IT + ja_JP + zh_CN + hi_IN; en_GB/en_CA/en_US fall back to default)
+- Holiday calendars at `resources/com/countmyh/holidays/holidays_<locale>.properties` — explicit `YYYY-MM-DD=Name` entries; add a new country with one file + one switch line in `HolidayCalendarFactory`
+- Date formats at `resources/com/countmyh/calendar/calendar_<locale>.properties` — key `date.format` (e.g. `MM/dd/yyyy` for en-US); loaded by `CalendarConfig` using the same hyphen→underscore convention. Controls CSV import parsing, CSV export formatting, and date column display. Timestamp columns (import history) stay fixed at `dd/MM/yyyy HH:mm`.
 - Every code change must update unit tests, README.md, and CLAUDE.md if affected
 
 ## Before Every Package or Release

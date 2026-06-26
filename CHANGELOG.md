@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.2] - 2026-06-26
+
+### Added
+- **Locale-aware date format** — CSV import, export, and date display now use the format defined for the active locale:
+  - `dd/MM/yyyy` — pt-BR, en-GB, hi-IN, it-IT, es-ES
+  - `MM/dd/yyyy` — en-US
+  - `yyyy-MM-dd` — en-CA (ISO standard)
+  - `yyyy/MM/dd` — ja-JP, zh-CN
+- `CalendarConfig` service reads `date.format` from `calendar_<locale>.properties` at classpath; adding a new format requires only one file
+- 9 new tests in `CalendarConfigTest` (one per supported locale)
+
+### Changed
+- Total tests: 115 → 124
+
+## [3.2.1] - 2026-06-26
+
+### Added
+- **Spanish (ES)** locale — full UI translation (`messages_es_ES.properties`) and Spain public holiday calendar (`holidays_es_ES.properties`) with 10 national holidays including Epiphany, Good Friday, and Fiesta Nacional, pre-populated 2017–2027
+- `Español (ES)` button added to welcome screen and Settings language picker
+
+## [3.2.0] - 2026-06-25
+
+### Added
+- **8-language support** — Chinese (CN), English UK, English US, English Canada, Hindi (India), Japanese, Italian join the existing English and Português (BR)
+- **Data-driven holiday calendars** — each locale has a `holidays_<locale>.properties` file with explicit `YYYY-MM-DD=Name` entries for 2017–2027; files accumulate over time (past years never removed); adding a new country requires only one file + one switch-case in `HolidayCalendarFactory`
+- `HolidayCalendar` interface, `HolidayCalendarLoader` (classpath reader, cached), `HolidayCalendarFactory` (locale → calendar)
+- Full UI translations for Italian, Japanese, Simplified Chinese, and Hindi
+- 19 new tests in `HolidayCalendarTest` (at least one verified date per country)
+- Welcome screen and Settings language picker now show all 8 locales in a `FlowPane` grid
+
+### Changed
+- `BusinessDayService` no longer contains hardcoded Brazilian logic; delegates to `HolidayCalendarFactory.forLocale(I18n.getLocale().toLanguageTag())` dynamically — switching locale in Settings immediately changes which holidays appear in Month Balance cards
+- `BusinessDayServiceTest` now sets `pt-BR` locale in `@BeforeEach` to keep existing Brazilian assertions valid
+- Total tests: 94 → 112
+
 ## [3.1.1] - 2026-06-25
 
 ### Fixed

@@ -22,7 +22,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -104,9 +103,7 @@ public class App extends Application {
 
                 if (remaining > 0) {
                     var wait = new PauseTransition(Duration.seconds(remaining));
-                    wait.setOnFinished(e -> {
-                        fadeOutSplash(splashPane, blinkAnim, afterSplash);
-                    });
+                    wait.setOnFinished(_ -> fadeOutSplash(splashPane, blinkAnim, afterSplash));
                     wait.play();
                 } else {
                     fadeOutSplash(splashPane, blinkAnim, afterSplash);
@@ -145,44 +142,57 @@ public class App extends Application {
         var selectLabel = new Label("Select your language:");
         selectLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #e4e4e7; -fx-font-weight: bold;");
 
+        record LangOption(String label, Locale locale) {}
+        var langOptions = java.util.List.of(
+            new LangOption("Português (BR)",    Locale.of("pt", "BR")),
+            new LangOption("English (US)",      Locale.of("en", "US")),
+            new LangOption("English (UK)",      Locale.of("en", "GB")),
+            new LangOption("English (Canada)",  Locale.of("en", "CA")),
+            new LangOption("中文 (CN)",          Locale.of("zh", "CN")),
+            new LangOption("हिन्दी (India)",      Locale.of("hi", "IN")),
+            new LangOption("日本語 (JP)",         Locale.of("ja", "JP")),
+            new LangOption("Italiano (IT)",     Locale.of("it", "IT")),
+            new LangOption("Español (ES)",      Locale.of("es", "ES"))
+        );
+
         var group = new ToggleGroup();
-
-        var btnEn = new ToggleButton("English");
-        btnEn.getStyleClass().add("filter-button");
-        btnEn.setToggleGroup(group);
-        btnEn.setStyle("-fx-font-size: 14px; -fx-padding: 10 28;");
-
-        var btnPt = new ToggleButton("Português (BR)");
-        btnPt.getStyleClass().add("filter-button");
-        btnPt.setToggleGroup(group);
-        btnPt.setStyle("-fx-font-size: 14px; -fx-padding: 10 28;");
-
-        var langButtons = new HBox(16, btnEn, btnPt);
-        langButtons.setAlignment(Pos.CENTER);
+        var langPane = new javafx.scene.layout.FlowPane(10, 10);
+        langPane.setAlignment(Pos.CENTER);
+        langPane.setMaxWidth(600);
+        for (var opt : langOptions) {
+            var btn = new ToggleButton(opt.label());
+            btn.getStyleClass().add("filter-button");
+            btn.setToggleGroup(group);
+            btn.setStyle("-fx-font-size: 13px; -fx-padding: 9 20;");
+            btn.setUserData(opt.locale());
+            langPane.getChildren().add(btn);
+        }
 
         var btnContinue = new Button("Continue");
         btnContinue.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-size: 15px; "
                 + "-fx-font-weight: bold; -fx-padding: 12 40; -fx-background-radius: 10; -fx-cursor: hand;");
         btnContinue.setDisable(true);
 
-        group.selectedToggleProperty().addListener((obs, old, sel) -> btnContinue.setDisable(sel == null));
+        group.selectedToggleProperty().addListener((_, _, sel) -> btnContinue.setDisable(sel == null));
 
-        btnContinue.setOnAction(e -> {
-            Locale locale = btnPt.isSelected() ? Locale.of("pt", "BR") : Locale.ENGLISH;
+        btnContinue.setOnAction(_ -> {
+            var selected = group.getSelectedToggle();
+            if (selected == null) return;
+            Locale locale = (Locale) selected.getUserData();
             I18n.setLocale(locale);
             primaryStage.setTitle(I18n.get("app.title"));
 
             var fadeOut = new FadeTransition(Duration.millis(400), picker);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(ev -> {
+            fadeOut.setOnFinished(_ -> {
                 rootStack.getChildren().remove(picker);
                 showMainApp();
             });
             fadeOut.play();
         });
 
-        picker.getChildren().addAll(welcomeTitle, welcomeMsg, thanksMsg, selectLabel, langButtons, btnContinue);
+        picker.getChildren().addAll(welcomeTitle, welcomeMsg, thanksMsg, selectLabel, langPane, btnContinue);
         rootStack.getChildren().add(picker);
     }
 
@@ -234,11 +244,11 @@ public class App extends Application {
         }
 
         var timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, e -> logoView.setImage(eyesOpen)),
-                new KeyFrame(Duration.millis(1800), e -> logoView.setImage(eyesClosed)),
-                new KeyFrame(Duration.millis(1950), e -> logoView.setImage(eyesOpen)),
-                new KeyFrame(Duration.millis(2100), e -> logoView.setImage(eyesClosed)),
-                new KeyFrame(Duration.millis(2250), e -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.ZERO, _ -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.millis(1800), _ -> logoView.setImage(eyesClosed)),
+                new KeyFrame(Duration.millis(1950), _ -> logoView.setImage(eyesOpen)),
+                new KeyFrame(Duration.millis(2100), _ -> logoView.setImage(eyesClosed)),
+                new KeyFrame(Duration.millis(2250), _ -> logoView.setImage(eyesOpen)),
                 new KeyFrame(Duration.millis(4000))
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -250,7 +260,7 @@ public class App extends Application {
         var fadeOut = new FadeTransition(Duration.millis(600), splash);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> {
+        fadeOut.setOnFinished(_ -> {
             ((StackPane) splash.getParent()).getChildren().remove(splash);
             onFinished.run();
         });
