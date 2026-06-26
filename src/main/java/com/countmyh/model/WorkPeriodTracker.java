@@ -13,7 +13,6 @@ public class WorkPeriodTracker {
     private List<ImportRecord> importHistory;
     private List<VacationEntry> vacationDays;
     private List<MonthNote> monthNotes;
-    private List<MonthSelling> monthSellings;
     private List<String> hiddenProjects;
     private LocalDateTime lastImportDate;
     private String lastSourceFile;
@@ -24,7 +23,6 @@ public class WorkPeriodTracker {
         this.importHistory = new ArrayList<>();
         this.vacationDays = new ArrayList<>();
         this.monthNotes = new ArrayList<>();
-        this.monthSellings = new ArrayList<>();
         this.hiddenProjects = new ArrayList<>();
     }
 
@@ -132,28 +130,6 @@ public class WorkPeriodTracker {
         return hourSellings.stream().filter(s -> s.year() == year).findFirst().orElse(null);
     }
 
-    public List<MonthSelling> getMonthSellings() {
-        return monthSellings;
-    }
-
-    public void setMonthSellings(List<MonthSelling> monthSellings) {
-        this.monthSellings = monthSellings != null ? monthSellings : new ArrayList<>();
-    }
-
-    public void setMonthSelling(int year, int month, double hoursSold) {
-        monthSellings.removeIf(s -> s.year() == year && s.month() == month);
-        if (hoursSold > 0) {
-            monthSellings.add(new MonthSelling(year, month, hoursSold));
-        }
-    }
-
-    public double getMonthSelling(int year, int month) {
-        return monthSellings.stream()
-                .filter(s -> s.year() == year && s.month() == month)
-                .mapToDouble(MonthSelling::hoursSold)
-                .findFirst().orElse(0);
-    }
-
     public void addImportRecord(ImportRecord record) {
         importHistory.add(record);
     }
@@ -185,7 +161,6 @@ public class WorkPeriodTracker {
         importHistory.clear();
         vacationDays.clear();
         monthNotes.clear();
-        monthSellings.clear();
         hiddenProjects.clear();
         lastImportDate = null;
         lastSourceFile = null;

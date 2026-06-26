@@ -5,7 +5,6 @@ import com.countmyh.model.WorkPeriodTracker;
 import com.countmyh.service.CalculationService;
 import com.countmyh.service.JsonPersistenceService;
 import com.countmyh.util.I18n;
-import com.countmyh.util.MonthNames;
 import com.countmyh.util.Toast;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,7 +35,6 @@ public class HourSellingView {
     private final VBox content;
     private final StackPane rootStack;
     private FlowPane cardsPane;
-    private boolean monthlyMode = true;
     private int currentStartYear;
     private int currentEndYear;
 
@@ -69,25 +67,7 @@ public class HourSellingView {
     }
 
     private VBox buildControls() {
-        var modeGroup = new ToggleGroup();
-
-        var monthlyBtn = new ToggleButton(I18n.get("selling.mode.monthly"));
-        monthlyBtn.getStyleClass().add("filter-button");
-        monthlyBtn.setToggleGroup(modeGroup);
-        monthlyBtn.setSelected(true);
-
-        var yearlyBtn = new ToggleButton(I18n.get("selling.mode.yearly"));
-        yearlyBtn.getStyleClass().add("filter-button");
-        yearlyBtn.setToggleGroup(modeGroup);
-
-        monthlyBtn.setOnAction(e -> { monthlyMode = true; buildCards(); });
-        yearlyBtn.setOnAction(e -> { monthlyMode = false; buildCards(); });
-
-        var modeRow = new HBox(8, monthlyBtn, yearlyBtn);
-        modeRow.setAlignment(Pos.CENTER_LEFT);
-
-        var yearRow = buildYearFilter();
-        return new VBox(8, modeRow, yearRow);
+        return new VBox(8, buildYearFilter());
     }
 
     private HBox buildYearFilter() {
@@ -139,22 +119,7 @@ public class HourSellingView {
 
     private void buildCards() {
         cardsPane.getChildren().clear();
-        if (monthlyMode) buildMonthlyCards();
-        else buildYearlyCards();
-    }
-
-    private void buildMonthlyCards() {
-        Map<YearMonth, Double> workedByMonth = calcService.getMonthlyTotalWorked(data);
-        for (var entry : workedByMonth.entrySet()) {
-            YearMonth ym = entry.getKey();
-            if (ym.getYear() < currentStartYear || ym.getYear() > currentEndYear) continue;
-            cardsPane.getChildren().add(buildMonthCard(ym, entry.getValue()));
-        }
-        if (cardsPane.getChildren().isEmpty()) {
-            var empty = new Label(I18n.get("selling.no.data"));
-            empty.setStyle("-fx-text-fill: #8b8d97;");
-            cardsPane.getChildren().add(empty);
-        }
+        buildYearlyCards();
     }
 
     private void buildYearlyCards() {
@@ -172,33 +137,6 @@ public class HourSellingView {
             empty.setStyle("-fx-text-fill: #8b8d97;");
             cardsPane.getChildren().add(empty);
         }
-    }
-
-    private Node buildMonthCard(YearMonth ym, double worked) {
-        var card = new VBox(4);
-        card.setPrefWidth(210);
-        card.setPadding(new Insets(12));
-        card.setStyle("-fx-background-color: #1a1d27; -fx-border-color: #2a2d3a; "
-                + "-fx-border-radius: 10; -fx-background-radius: 10;");
-
-        var header = new Label(MonthNames.label(ym.getYear(), ym.getMonthValue()));
-        header.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e4e4e7;");
-
-        var workedRow = buildRow(I18n.get("selling.worked"), String.format("%.0fh", worked), "#e4e4e7");
-
-        var sep = separator();
-
-        double currentSold = data.getMonthSelling(ym.getYear(), ym.getMonthValue());
-        var soldSpinner = buildSpinner(0, 10000, currentSold);
-        soldSpinner.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.equals(oldVal)) return;
-            data.setMonthSelling(ym.getYear(), ym.getMonthValue(), newVal);
-            saveQuietly();
-        });
-        var soldRow = buildSpinnerRow(I18n.get("selling.sold"), soldSpinner, "h");
-
-        card.getChildren().addAll(header, workedRow, sep, soldRow);
-        return card;
     }
 
     private Node buildYearCard(int year, double worked) {

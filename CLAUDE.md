@@ -4,7 +4,7 @@
 
 Pure Java desktop app (no Spring Boot). Three-layer structure:
 
-- **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `MonthSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
+- **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
 - **service/** — Business logic: import, persistence, calculations, business day calendar
 - **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), ExtraBalance (Extras), HourSelling, DataEntry, Settings
 - **util/** — Chart styling, color palette, month names, i18n, toast notifications
@@ -15,11 +15,10 @@ No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `
 
 - `WorkHourItem` — Java record. One row from CSV: date (LocalDate), client, project, item, hours, sourceFile. Convenience constructor without sourceFile. `withSourceFile()` for immutable copy. equals/hashCode excludes sourceFile.
 - `WorkHourSelling` — Java record: year, hoursSold, vacationDaysSold, note. Derived `vacationHoursSold()`.
-- `MonthSelling` — Java record: year, month, hoursSold. Stores hours sold per calendar month.
 - `ImportRecord` — Java record: fileName, filePath, importDate, entriesImported. equals/hashCode on filePath + importDate only.
 - `VacationEntry` — Java record: year, month, days (double, supports half-day with 0.5)
 - `MonthNote` — Java record: year, month, holidays (double, supports half-day), observation (holiday names/notes)
-- `WorkPeriodTracker` — Mutable class (not a record): entries + sellings + importHistory + vacationDays + monthNotes + monthSellings + hiddenProjects + metadata. `getVisibleEntries()` filters out hidden projects (used by CalculationService). `@JsonIgnore` on derived getters. `setYearlySelling(year, hoursSold, vacDays, note)` and `setMonthSelling(year, month, hours)` are upsert helpers (remove-then-add).
+- `WorkPeriodTracker` — Mutable class (not a record): entries + sellings + importHistory + vacationDays + monthNotes + hiddenProjects + metadata. `getVisibleEntries()` filters out hidden projects (used by CalculationService). `@JsonIgnore` on derived getters. `setYearlySelling(year, hoursSold, vacDays, note)` is an upsert helper (remove-then-add).
 
 All monthly/yearly aggregations are computed by `CalculationService`, not stored.
 Record accessors use component-name style (`item.date()`, `item.project()`) not getter style (`getDate()`).
@@ -55,7 +54,7 @@ Data;Cliente;Projeto;Item;Hs
 - **Toast notifications** (`Toast` util): floating top-right feedback messages (success/error/warning) with fade-in/out animation, replacing inline status labels.
 - **Month Balance view** (`ExtraHoursView`): monthly cards with worked/expected/extra/accumulated hours. Editable vacation days and holiday count (double spinners with 0.5 step for half-days), holiday observation text field (auto-filled from Brazilian calendar). Custom holidays adjust expected hours. All persisted to data.json.
 - **Extras view** (`ExtraBalanceView`): two-section analytical view. Section 1: yearly balance `BarChart<String,Number>` with three series — gross extras (indigo), hours sold (orange, negative), net balance (green/red per bar, colored via post-render). Section 2: per-project horizontal `BarChart<Number,String>` (gross vs sold), a `StackedBarChart<String,Number>` with per-project series stacked per year, and a `TableView` with worked/gross/sold/net columns (cells color-coded). All data from `CalculationService.getYearlyBalance()` and `getExtraPerProject()`.
-- **Hour Selling view** (`HourSellingView`): toggle between Monthly and Yearly mode. Monthly mode shows one card per month with a spinner for hours sold that month (stored as `MonthSelling`). Yearly mode shows one card per year with spinners for hoursSold and vacationDaysSold, plus a note field (stored as `WorkHourSelling`). Both modes have a year filter row. Cards display worked hours as context.
+- **Hour Selling view** (`HourSellingView`): shows one card per year with spinners for hoursSold and vacationDaysSold, plus a note field (stored as `WorkHourSelling`). Has a year filter row. Cards display worked hours as context.
 - **Settings view** (`SettingsView`): language selector (English/pt-BR, rebuilds UI on apply), project management (toggle visibility per project — hidden projects excluded from all charts/calculations), and uninstall (deletes `~/.countmyhours/`, closes app). Pinned at sidebar bottom.
 - Each imported entry is tagged with `sourceFile` for traceability
 

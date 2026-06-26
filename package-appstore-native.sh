@@ -9,7 +9,7 @@ ENTITLEMENTS_CHILD="$PROJECT_DIR/entitlements-child.plist"
 PROVISION_PROFILE="$PROJECT_DIR/CountMyHours.provisionprofile"
 
 APP_NAME="CountMyHours"
-APP_VERSION="3.2.7"
+APP_VERSION="3.2.8"
 BUNDLE_ID="com.countmyh.CountMyHours"
 
 SIGN_APP="3rd Party Mac Developer Application: THIAGO TOLEDO (3TJGYWF79B)"
