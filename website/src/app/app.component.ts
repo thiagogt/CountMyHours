@@ -7,6 +7,7 @@ import { HowItWorksComponent } from './components/how-it-works/how-it-works.comp
 import { LanguagesComponent } from './components/languages/languages.component';
 import { YoutubeComponent } from './components/youtube/youtube.component';
 import { DownloadCtaComponent } from './components/download-cta/download-cta.component';
+import { SupportComponent } from './components/support/support.component';
 import { FooterComponent } from './components/footer/footer.component';
 
 @Component({
@@ -21,6 +22,7 @@ import { FooterComponent } from './components/footer/footer.component';
     LanguagesComponent,
     YoutubeComponent,
     DownloadCtaComponent,
+    SupportComponent,
     FooterComponent
   ],
   template: `
@@ -33,6 +35,7 @@ import { FooterComponent } from './components/footer/footer.component';
       <app-languages />
       <app-youtube />
       <app-download-cta />
+      <app-support />
     </main>
     <app-footer />
   `

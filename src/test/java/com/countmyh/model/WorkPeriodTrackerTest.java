@@ -185,10 +185,10 @@ class WorkPeriodTrackerTest {
     @Test
     void shouldSetAndGetYearlySelling() {
         var tracker = new WorkPeriodTracker();
-        tracker.setYearlySelling(2026, 160.0, 5, "bonus");
+        tracker.setYearlySelling(2026, 160, 5, "bonus");
         var selling = tracker.getYearlySelling(2026);
         assertNotNull(selling);
-        assertEquals(160.0, selling.hoursSold());
+        assertEquals(160, selling.hoursSold());
         assertEquals(5, selling.vacationDaysSold());
         assertEquals("bonus", selling.note());
     }
@@ -196,11 +196,11 @@ class WorkPeriodTrackerTest {
     @Test
     void setYearlySellingNullShouldReplaceExisting() {
         var tracker = new WorkPeriodTracker();
-        tracker.setYearlySelling(2026, 100.0, 0, "first");
-        tracker.setYearlySelling(2026, 200.0, 10, "second");
+        tracker.setYearlySelling(2026, 100, 0, "first");
+        tracker.setYearlySelling(2026, 200, 10, "second");
         var selling = tracker.getYearlySelling(2026);
         assertNotNull(selling);
-        assertEquals(200.0, selling.hoursSold());
+        assertEquals(200, selling.hoursSold());
         assertEquals(1, tracker.getHourSellings().size());
     }
 

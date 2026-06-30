@@ -27,7 +27,7 @@ import { Component } from '@angular/core';
             </div>
             <h3 class="text-[#e4e4e7] font-bold text-xl mb-1">macOS</h3>
             <p class="text-[#9ca3af] text-sm mb-2">macOS 12 Monterey or later · v3.2</p>
-            <div class="text-3xl font-bold text-[#e4e4e7] mb-1">$9.99</div>
+            <div class="text-3xl font-bold text-[#e4e4e7] mb-1">$19.99</div>
             <p class="text-[#9ca3af] text-xs mb-6">one-time purchase</p>
             <a
               href="#"
@@ -55,7 +55,7 @@ import { Component } from '@angular/core';
             </div>
             <h3 class="text-[#e4e4e7] font-bold text-xl mb-1">Windows</h3>
             <p class="text-[#9ca3af] text-sm mb-2">Windows 10 / 11 · v3.2</p>
-            <div class="text-3xl font-bold text-[#9ca3af] mb-1">$9.99</div>
+            <div class="text-3xl font-bold text-[#9ca3af] mb-1">$19.99</div>
             <p class="text-[#9ca3af] text-xs mb-6">one-time purchase</p>
             <a
               href="mailto:thimakgt@gmail.com?subject=CountMyHours%20Windows%20Waitlist&body=Hi%2C%20I'd%20like%20to%20be%20notified%20when%20CountMyHours%20for%20Windows%20is%20available."

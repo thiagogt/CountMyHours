@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
           <a href="#features" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Features</a>
           <a href="#screenshots" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Screenshots</a>
           <a href="#tutorial" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Tutorial</a>
+          <a href="#support" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Support</a>
           <a href="#download" class="bg-[#6366f1] hover:bg-[#4f46e5] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors">
             Download
           </a>
@@ -32,6 +33,7 @@ import { CommonModule } from '@angular/common';
           <a href="#features" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm" (click)="mobileOpen.set(false)">Features</a>
           <a href="#screenshots" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm" (click)="mobileOpen.set(false)">Screenshots</a>
           <a href="#tutorial" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm" (click)="mobileOpen.set(false)">Tutorial</a>
+          <a href="#support" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm" (click)="mobileOpen.set(false)">Support</a>
           <a href="#download" class="bg-[#6366f1] text-white text-sm px-4 py-2 rounded-lg font-medium text-center" (click)="mobileOpen.set(false)">Download</a>
         </div>
       }

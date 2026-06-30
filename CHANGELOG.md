@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.10] - 2026-06-29
+
+### Added
+- **Support view** — new sidebar entry pinned above Settings; shows contact email `countmyhour@gmail.com` with a "Send Email" button (opens default mail client via `Desktop.getDesktop().mail()`) and a "Copy" button (copies address to clipboard with a brief "Copied!" confirmation). Fully translated into all 9 supported languages.
+
+## [3.2.9] - 2026-06-29
+
+### Changed
+- **Hours sold is now an integer** — `WorkHourSelling.hoursSold` changed from `double` to `int`. The sold-hours spinner in the Hour Selling view uses integer steps (no more 0.5 increments for sold hours). Vacation days sold remains `double` to support half-day precision.
+
 ## [3.2.8] - 2026-06-26
 
 ### Removed

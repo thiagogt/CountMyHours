@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
         <div class="flex items-center gap-6">
           <a href="#features" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Features</a>
           <a href="#screenshots" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Screenshots</a>
+          <a href="#support" class="text-[#9ca3af] hover:text-[#e4e4e7] text-sm transition-colors">Support</a>
           <a href="https://apps.apple.com/app/countmyhours" target="_blank" rel="noopener noreferrer" class="text-[#6366f1] hover:text-[#4f46e5] text-sm transition-colors">App Store</a>
         </div>
       </div>

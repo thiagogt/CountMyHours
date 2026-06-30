@@ -6,7 +6,7 @@ Pure Java desktop app (no Spring Boot). Three-layer structure:
 
 - **model/** — Records and POJOs: `WorkHourItem`, `WorkHourSelling`, `WorkPeriodTracker`, `ImportRecord`, `VacationEntry`, `MonthNote`
 - **service/** — Business logic: import, persistence, calculations, business day calendar
-- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), ExtraBalance (Extras), HourSelling, DataEntry, Settings
+- **view/** — JavaFX UI (programmatic, no FXML): Dashboard, Timeline, ExtraHours (Month Balance), ExtraBalance (Extras), HourSelling, DataEntry, Settings, Support
 - **util/** — Chart styling, color palette, month names, i18n, toast notifications
 
 No `module-info.java` — runs on classpath. The `javafx-maven-plugin` handles `--add-modules`.

@@ -2,7 +2,7 @@ package com.countmyh.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public record WorkHourSelling(int year, double hoursSold, double vacationDaysSold, String note) {
+public record WorkHourSelling(int year, int hoursSold, double vacationDaysSold, String note) {
 
     @JsonIgnore
     public double vacationHoursSold() {

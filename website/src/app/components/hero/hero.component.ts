@@ -53,7 +53,7 @@ import { Component } from '@angular/core';
               </div>
               <div class="w-px h-10 bg-[#2a2d3a]"></div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-[#e4e4e7]">$9.99</div>
+                <div class="text-2xl font-bold text-[#e4e4e7]">$19.99</div>
                 <div class="text-[#9ca3af] text-xs">One-time</div>
               </div>
             </div>

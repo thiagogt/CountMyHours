@@ -38,6 +38,7 @@ public class MainView {
     private HourSellingView hourSellingView;
     private DataEntryView dataEntryView;
     private SettingsView settingsView;
+    private SupportView supportView;
     private ToggleButton btnDashboard;
     private String currentView = "dashboard";
     private boolean viewsStale = false;
@@ -84,6 +85,7 @@ public class MainView {
         var btnSelling = createNavButton(I18n.get("nav.selling"), group);
         var btnData = createNavButton(I18n.get("nav.data"), group);
 
+        var btnSupport = createNavButton(I18n.get("nav.support"), group);
         var btnSettings = createNavButton(I18n.get("nav.settings"), group);
 
         btnDashboard.setOnAction(e -> showView("dashboard"));
@@ -92,12 +94,13 @@ public class MainView {
         btnExtras.setOnAction(e -> showView("extras"));
         btnSelling.setOnAction(e -> showView("selling"));
         btnData.setOnAction(e -> showView("data"));
+        btnSupport.setOnAction(e -> showView("support"));
         btnSettings.setOnAction(e -> showView("settings"));
 
         var spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnExtras, btnSelling, btnData, spacer, btnSettings);
+        var sidebar = new VBox(0, logoBox, subtitle, btnDashboard, btnTimeline, btnExtra, btnExtras, btnSelling, btnData, spacer, btnSupport, btnSettings);
         sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(200);
         sidebar.setMinWidth(200);
@@ -130,6 +133,7 @@ public class MainView {
             case "extras" -> getExtraBalanceView();
             case "selling" -> getHourSellingView();
             case "data" -> getDataEntryView();
+            case "support" -> getSupportView();
             case "settings" -> getSettingsView();
             default -> new Label("Unknown view");
         };
@@ -164,6 +168,11 @@ public class MainView {
     private Node getDataEntryView() {
         dataEntryView = new DataEntryView(data, csvImportService, persistenceService, this::refreshViews);
         return dataEntryView.getRoot();
+    }
+
+    private Node getSupportView() {
+        supportView = new SupportView();
+        return supportView.getRoot();
     }
 
     private Node getSettingsView() {

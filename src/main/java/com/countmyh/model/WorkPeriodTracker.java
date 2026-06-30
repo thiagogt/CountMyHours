@@ -121,7 +121,7 @@ public class WorkPeriodTracker {
         hourSellings.add(selling);
     }
 
-    public void setYearlySelling(int year, double hoursSold, double vacationDaysSold, String note) {
+    public void setYearlySelling(int year, int hoursSold, double vacationDaysSold, String note) {
         hourSellings.removeIf(s -> s.year() == year);
         hourSellings.add(new WorkHourSelling(year, hoursSold, vacationDaysSold, note));
     }

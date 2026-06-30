@@ -154,11 +154,11 @@ public class HourSellingView {
         var sep = separator();
 
         WorkHourSelling existing = data.getYearlySelling(year);
-        double[] sold = {existing != null ? existing.hoursSold() : 0};
+        int[] sold = {existing != null ? existing.hoursSold() : 0};
         double[] vac = {existing != null ? existing.vacationDaysSold() : 0};
         String[] note = {existing != null && existing.note() != null ? existing.note() : ""};
 
-        var soldSpinner = buildSpinner(0, 100000, sold[0]);
+        var soldSpinner = buildIntSpinner(0, 100000, sold[0]);
         soldSpinner.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null || newVal.equals(oldVal)) return;
             sold[0] = newVal;
@@ -198,6 +198,16 @@ public class HourSellingView {
         return card;
     }
 
+    private Spinner<Integer> buildIntSpinner(int min, int max, int initial) {
+        var spinner = new Spinner<Integer>();
+        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(min, max, initial));
+        spinner.setPrefWidth(80);
+        spinner.setPrefHeight(22);
+        spinner.setStyle("-fx-font-size: 11px;");
+        spinner.setEditable(true);
+        return spinner;
+    }
+
     private Spinner<Double> buildSpinner(double min, double max, double initial) {
         var spinner = new Spinner<Double>();
         spinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(min, max, initial, 0.5));
@@ -208,7 +218,7 @@ public class HourSellingView {
         return spinner;
     }
 
-    private HBox buildSpinnerRow(String label, Spinner<Double> spinner, String unit) {
+    private HBox buildSpinnerRow(String label, Spinner<?> spinner, String unit) {
         var lbl = new Label(label);
         lbl.setStyle("-fx-text-fill: #8b8d97; -fx-font-size: 11px;");
         lbl.setMinWidth(70);
